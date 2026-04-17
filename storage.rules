@@ -1,0 +1,47 @@
+rules_version = '2';
+
+// Craft rules based on data in your Firestore database
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+service firebase.storage {
+  match /b/{bucket}/o {
+     
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserDoc() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function hasUserPermission(requiredPerm) {
+      return isSignedIn()
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && getUserDoc().data.permissions != null
+        && requiredPerm in getUserDoc().data.permissions;
+    }
+
+    function isAdmin() {
+      return hasUserPermission('SUPERADMIN') || hasUserPermission('ADMIN');
+    }
+    function isValidUpload(MB, contentType) {
+      return request.resource != null
+        && request.resource.size < MB * 1024 * 1024
+        && (contentType == null
+          || (request.resource.contentType != null
+            && request.resource.contentType.matches(contentType)));
+    }
+
+    // ====== USER  ======
+    match /user/{userId}/{path=**} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isSignedIn() && request.auth.uid == userId && isValidUpload(10, null);
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }    
+    
+    // Catch-all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

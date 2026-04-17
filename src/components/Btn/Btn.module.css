@@ -1,0 +1,7 @@
+.ghost {
+  border-color: transparent !important;
+}
+
+.ghost:hover {
+  border-color: transparent !important;
+}

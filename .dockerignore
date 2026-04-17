@@ -1,0 +1,11 @@
+node_modules
+functions/node_modules
+dist
+.firebase
+emulator-data
+.git
+.github
+.gitignore
+.env*
+*.log
+README.md
