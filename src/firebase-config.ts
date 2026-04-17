@@ -1,11 +1,12 @@
 export const firebaseConfig = {
-  apiKey: "AIzaSyDQxL1Tru7dBOVMiOrvAFUF_b-J9ae9I7Q",
-  authDomain: "hubcic.firebaseapp.com",
-  projectId: "hubcic",
-  storageBucket: "hubcic.firebasestorage.app",
-  messagingSenderId: "432988581068",
-  appId: "1:432988581068:web:a9115a0bd5c983c172e669",
-  measurementId: "G-WC73VX5BC6"
-} as const
+  apiKey: "AIzaSyDEOhENzMU44tQY2cLCICXzmdYTWZDNzN4",
+  authDomain: "cortex-cic.firebaseapp.com",
+  projectId: "cortex-cic",
+  storageBucket: "cortex-cic.firebasestorage.app",
+  messagingSenderId: "326336897936",
+  appId: "1:326336897936:web:accddf98bcf6b19f194915",
+  measurementId: "G-LR8KK6FCYF",
+} as const;
 
-export const VAPID_PUBLIC_KEY = "BHiEnLfl7S57DtLoWN1aaVWgtVrdpq42XbJ6T3McgIjPsdF8DChLrxogxVUmi8fRvVsCf44_xiBI7xVVkCw6VzI" as const
+export const VAPID_PUBLIC_KEY =
+  "BIha2JlPTcIhM1AupT-oqtnJvJfSKVnoDz6u1FXbjum1BJlkLcFQ3mmfyObGyiG3YyoeNji3PKmjCyQ1vtkD-qA" as const;
