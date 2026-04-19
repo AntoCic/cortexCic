@@ -1,0 +1,254 @@
+.root {
+  min-height: 100vh;
+  background: #f8f7ff;
+  color: #1a1a2e;
+}
+
+/* Nav */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(248, 247, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(108, 99, 255, 0.1);
+  padding: 0.75rem 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: #1a1a2e;
+  text-decoration: none;
+}
+
+.logo {
+  font-size: 1.6rem;
+  color: #6c63ff;
+  line-height: 1;
+}
+
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.motionEntryBtn {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  background: rgba(26, 26, 46, 0.04) !important;
+}
+
+.motionEntryBtn:hover {
+  background: rgba(26, 26, 46, 0.1) !important;
+}
+
+.gsapEntryBtn {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  border-color: rgba(10, 228, 72, 0.55) !important;
+  color: #0b7f36 !important;
+  background: rgba(10, 228, 72, 0.08) !important;
+}
+
+.gsapEntryBtn:hover {
+  color: #055928 !important;
+  border-color: rgba(10, 228, 72, 0.9) !important;
+  background: rgba(10, 228, 72, 0.18) !important;
+}
+
+/* Hero */
+.hero {
+  padding: 5rem 0 4rem;
+  text-align: center;
+}
+
+.heroTag {
+  display: inline-block;
+  background: rgba(108, 99, 255, 0.1);
+  color: #6c63ff;
+  border-radius: 100px;
+  padding: 0.3rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.heroTitle {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.25rem;
+  color: #1a1a2e;
+}
+
+.heroTitle span {
+  color: #6c63ff;
+}
+
+.heroSub {
+  font-size: 1.1rem;
+  color: #6c757d;
+  max-width: 520px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.65;
+}
+
+.heroActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Features */
+.features {
+  padding: 4rem 0;
+}
+
+.sectionLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6c63ff;
+  margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.sectionSub {
+  color: #6c757d;
+  max-width: 480px;
+  line-height: 1.65;
+}
+
+.featureCard {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 16px;
+  padding: 2rem;
+  height: 100%;
+}
+
+.featureIcon {
+  font-size: 2rem;
+  color: #6c63ff;
+  margin-bottom: 1rem;
+}
+
+.featureTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.featureText {
+  font-size: 0.92rem;
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+.featureBadge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  background: rgba(108, 99, 255, 0.1);
+  color: #6c63ff;
+  margin-top: 0.75rem;
+}
+
+/* How it works */
+.howItWorks {
+  padding: 4rem 0;
+  background: #ffffff;
+}
+
+.stepNum {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #6c63ff;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.stepTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.stepText {
+  font-size: 0.88rem;
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+/* CTA */
+.cta {
+  padding: 5rem 0;
+  text-align: center;
+  background: linear-gradient(135deg, #6c63ff 0%, #5a52d5 100%);
+  color: #fff;
+}
+
+.ctaTitle {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+
+.ctaSub {
+  font-size: 1rem;
+  opacity: 0.8;
+  margin-bottom: 2.5rem;
+}
+
+/* Footer */
+.footer {
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  font-size: 0.82rem;
+  color: #adb5bd;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .navActions {
+    gap: 0.5rem;
+  }
+
+  .motionEntryBtn {
+    padding-inline: 0.7rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .gsapEntryBtn {
+    padding-inline: 0.7rem !important;
+    font-size: 0.85rem !important;
+  }
+}

@@ -1,0 +1,87 @@
+.root {
+  padding: 2rem 0 4rem;
+}
+
+.section {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 1.25rem;
+}
+
+/* API key */
+.apiKeyRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.apiKeyInput {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.82rem;
+  background: #f8f9fa;
+}
+
+/* Members */
+.memberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.memberRow:last-child {
+  border-bottom: none;
+}
+
+.memberEmail {
+  font-size: 0.88rem;
+  color: #1a1a2e;
+}
+
+.memberBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+}
+
+.memberBadgeAdmin {
+  background: rgba(108, 99, 255, 0.12);
+  color: #6c63ff;
+}
+
+.memberBadgeMember {
+  background: #f1f3f5;
+  color: #6c757d;
+}
+
+.addMemberRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.removeBtn:hover {
+  color: #dc3545;
+}

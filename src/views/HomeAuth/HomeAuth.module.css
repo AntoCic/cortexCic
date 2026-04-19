@@ -1,0 +1,116 @@
+.root {
+  padding: 2.5rem 0 4rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ProjectCard */
+.projectCard {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.projectCard:hover {
+  border-color: #6c63ff;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.cardIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(108, 99, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c63ff;
+}
+
+.cardArrow {
+  color: #adb5bd;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.projectCard:hover .cardArrow {
+  color: #6c63ff;
+  transform: translateX(3px);
+}
+
+.cardName {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+  color: #1a1a2e;
+}
+
+.cardDesc {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #adb5bd;
+}
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: #adb5bd;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #dee2e6;
+}
+
+.emptyTitle {
+  font-weight: 700;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.emptyText {
+  font-size: 0.88rem;
+  margin-bottom: 1.5rem;
+}

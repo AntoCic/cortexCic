@@ -1,0 +1,1 @@
+../skills/framer-motion-animator.md

@@ -41,5 +41,34 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isSignedIn() && hasUserPermission('SUPERADMIN');
     }
+
+    function isProjectMember(projectId) {
+      return isSignedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.members;
+    }
+
+    function isProjectAdmin(projectId) {
+      return isProjectMember(projectId) &&
+        get(/databases/$(database)/documents/projects/$(projectId)).data.members[request.auth.uid].role == 'admin';
+    }
+
+    match /projects/{projectId} {
+      allow read: if isProjectMember(projectId);
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.auth.uid in request.resource.data.members;
+      allow update: if isProjectAdmin(projectId);
+      allow delete: if isProjectAdmin(projectId) && resource.data.ownerId == request.auth.uid;
+
+      match /tasks/{taskId} {
+        allow read: if isProjectMember(projectId);
+        allow write: if isProjectMember(projectId);
+      }
+
+      match /notifications/{notifId} {
+        allow read: if isProjectMember(projectId);
+        allow write: if false;
+      }
+    }
   }
 }

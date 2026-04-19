@@ -1,5 +1,26 @@
 # cortexCic — Project Context
 
+## App Purpose
+
+cortexCic è un **hub centralizzato** per gestire più applicazioni web da un'unica interfaccia. Funziona come il "cortex" (centro di controllo) per un ecosistema di progetti.
+
+### Cosa fa:
+- **Gestione progetti**: ogni utente crea e gestisce progetti. Ogni progetto è privato; solo l'owner (admin) e i membri esplicitamente aggiunti vi possono accedere.
+- **Task board kanban**: ogni progetto ha una board con colonne `todo`, `inprogress`, `done`, `block`. Le task si creano via modal e si spostano via drag & drop (`@dnd-kit`).
+- **Notifiche push** *(in sviluppo)*: ogni progetto genera una `apiKey` (UUID). I progetti esterni la usano per inviare notifiche a cortexCic tramite API — errori, warning, log, preview link, o dati JSON strutturati.
+- **Integrazione GitHub** *(futura)*: ogni progetto potrà essere collegato a un repo GitHub per ricevere aggiornamenti su commit, PR e deploy.
+
+### Struttura accesso per progetto:
+- `ownerId` = chi ha creato il progetto, sempre `admin`
+- `members: { [uid]: { email, role, addedAt } }` = mappa dei membri con ruolo (`admin` | `member`)
+- `memberUids: string[]` = array parallelo per query Firestore `array-contains`
+- L'aggiunta di membri via email usa la Cloud Function `lookupUserByEmail`
+
+### Animazioni:
+- `framer-motion` per landing page, card, kanban (varianti condivise in `src/styles/motionVariants.ts`)
+
+---
+
 ## Language
 - **TypeScript only** — no plain JS files. React components use `.tsx`, all other modules use `.ts`.
 
@@ -159,3 +180,16 @@ toast.dismiss('save-op');
 
 The `ToastOptions` type extends react-hot-toast's native options (`duration`, `position`, `style`, `icon`, `id`, etc.) with an additional `subtitle?: string` field.
 When `subtitle` is provided, the toast renders a two-line custom layout. All native options are available in TypeScript autocomplete.
+
+---
+
+## Codex/Claude Interop
+
+- Canonical project context lives in this file (`AGENTS.md` at repo root).
+- Root `CLAUDE.md` is a symlink alias to keep Claude Code aligned with Codex on the same source.
+- Skills/instructions inside `.claude/agents/` and `.claude/skills/` should be treated as reusable task-specific guidance when relevant.
+
+### Local Skills Registry
+
+- `framer-motion-animator` => `.claude/skills/framer-motion-animator/SKILL.md` (alias to `.claude/skills/framer-motion-animator.md`)
+  Use when asked to add Framer Motion animations, page transitions, micro-interactions, gesture animations, or orchestrated motion variants.

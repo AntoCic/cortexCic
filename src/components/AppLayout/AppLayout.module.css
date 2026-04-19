@@ -1,0 +1,73 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.nav {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo {
+  font-size: 1.5rem;
+  color: #6c63ff;
+  line-height: 1;
+}
+
+.brandName {
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  color: #1a1a2e;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e9ecef;
+}
+
+.avatarInitials {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #6c63ff;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutBtn {
+  color: #6c757d;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.logoutBtn:hover {
+  color: #dc3545;
+}
+
+.main {
+  flex: 1;
+}
