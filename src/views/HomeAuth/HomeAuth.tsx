@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../../store';
-import { setProjects } from '../../db/projects/projectsSlice';
+import { setProjects, setProjectsError } from '../../db/projects/projectsSlice';
 import { subscribeUserProjects } from '../../db/projects/projectRepo';
 import { useAuth } from '../../db/auth/useAuth';
 import { Btn } from '../../components/Btn/Btn';
@@ -19,7 +19,12 @@ const HomeAuth = () => {
 
   useEffect(() => {
     if (!user) return;
-    const unsub = subscribeUserProjects(user.uid, (p) => dispatch(setProjects(p)));
+    console.log('[HomeAuth] subscribing for uid:', user.uid);
+    const unsub = subscribeUserProjects(
+      user.uid,
+      (p) => { console.log('[HomeAuth] projects received:', p.length, p); dispatch(setProjects(p)); },
+      (err) => { console.error('[subscribeUserProjects] error:', err); dispatch(setProjectsError(err.message)); },
+    );
     return unsub;
   }, [user, dispatch]);
 

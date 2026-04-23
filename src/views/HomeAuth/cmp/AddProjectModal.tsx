@@ -24,7 +24,8 @@ const AddProjectModal = ({ show, onClose }: Props) => {
     if (!user || !name.trim()) return;
     setLoading(true);
     try {
-      await createProject({
+      console.log('[createProject] uid:', user.uid);
+      const newId = await createProject({
         name: name.trim(),
         description: description.trim(),
         ownerId: user.uid,
@@ -38,11 +39,13 @@ const AddProjectModal = ({ show, onClose }: Props) => {
         memberUids: [user.uid],
         apiKey: crypto.randomUUID(),
       });
+      console.log('[createProject] done, id:', newId);
       toast.success('Progetto creato');
       setName('');
       setDescription('');
       onClose();
-    } catch {
+    } catch (err) {
+      console.error('[createProject] error:', err);
       toast.error('Errore nella creazione del progetto');
     } finally {
       setLoading(false);

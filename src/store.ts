@@ -4,12 +4,16 @@ import type { TypedUseSelectorHook } from "react-redux";
 import authReducer from "./db/auth/authSlice";
 import projectsReducer from "./db/projects/projectsSlice";
 import tasksReducer from "./db/tasks/tasksSlice";
+import notificationsReducer from "./db/notifications/notificationsSlice";
+import notesReducer from "./db/notes/notesSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     projects: projectsReducer,
     tasks: tasksReducer,
+    notifications: notificationsReducer,
+    notes: notesReducer,
   },
 });
 

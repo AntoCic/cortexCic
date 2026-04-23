@@ -38,12 +38,16 @@ export async function deleteProject(id: string): Promise<void> {
   await deleteDoc(doc(col, id));
 }
 
-export function subscribeUserProjects(uid: string, cb: (projects: Project[]) => void): Unsubscribe {
+export function subscribeUserProjects(
+  uid: string,
+  cb: (projects: Project[]) => void,
+  onError?: (err: Error) => void,
+): Unsubscribe {
   const q = query(col, where('memberUids', 'array-contains', uid));
   return onSnapshot(q, (snap) => {
     const projects = snap.docs.map((d) => docToProject(d.id, d.data() as Record<string, unknown>));
     cb(projects);
-  });
+  }, onError);
 }
 
 export function subscribeProject(id: string, cb: (project: Project | null) => void): Unsubscribe {
@@ -67,4 +71,10 @@ export async function removeMember(projectId: string, uid: string): Promise<void
     updatedAt: serverTimestamp(),
   };
   await updateDoc(doc(col, projectId), patch);
+}
+
+export async function regenerateApiKey(projectId: string): Promise<string> {
+  const newKey = crypto.randomUUID();
+  await updateDoc(doc(col, projectId), { apiKey: newKey, updatedAt: serverTimestamp() });
+  return newKey;
 }

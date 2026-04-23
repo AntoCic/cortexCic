@@ -22,9 +22,9 @@
 }
 
 .logo {
-  font-size: 1.5rem;
-  color: #6c63ff;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .brandName {
@@ -32,6 +32,18 @@
   font-size: 1.1rem;
   letter-spacing: -0.02em;
   color: #1a1a2e;
+}
+
+.avatarLink {
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+  transition: box-shadow 0.15s;
+  text-decoration: none;
+}
+
+.avatarLink:hover {
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.35);
 }
 
 .avatar {
@@ -53,6 +65,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-decoration: none;
+  color: #6c757d;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.navLink:hover {
+  color: #6c63ff;
+  background: rgba(108, 99, 255, 0.07);
+}
+
+.navLinkLabel {
+  display: none;
+}
+
+@media (min-width: 576px) {
+  .navLinkLabel {
+    display: inline;
+  }
 }
 
 .logoutBtn {

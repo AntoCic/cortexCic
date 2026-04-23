@@ -39,6 +39,11 @@
     ],
     "rewrites": [
       {
+        "source": "/api/notify",
+        "function": "notify",
+        "region": "europe-west1"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

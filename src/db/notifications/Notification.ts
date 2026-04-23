@@ -1,16 +1,17 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type NotificationType = 'error' | 'warning' | 'info' | 'preview';
+export type NotificationType = 'info' | 'error' | 'warning' | 'deploy';
 
 export interface Notification {
   id: string;
   projectId: string;
   type: NotificationType;
-  title: string;
-  body: string;
-  meta?: Record<string, unknown>;
-  sentAt: Timestamp;
+  message: string;
+  payload?: Record<string, unknown>;
+  showPush: boolean;
+  createdAt: Timestamp;
   readByUids: string[];
+  pinnedByUids: string[];
 }
 
 export type NotificationWrite = Omit<Notification, 'id'>;

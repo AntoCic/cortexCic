@@ -15,4 +15,4 @@ WORKDIR /app
 
 EXPOSE 4000 5000 5001 8080 9099 9199
 
-CMD ["sh", "-c", "npm --prefix functions install && npm --prefix functions run build && firebase emulators:start --project demo-cortex-cic --import=./emulator-data"]
+CMD ["sh", "-c", "npm --prefix functions install && npm --prefix functions run build && firebase emulators:start --project cortex-cic --import=./emulator-data"]

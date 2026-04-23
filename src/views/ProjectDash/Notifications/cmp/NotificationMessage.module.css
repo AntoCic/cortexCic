@@ -1,0 +1,153 @@
+.bubble {
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  border-left: 4px solid transparent;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s;
+  position: relative;
+}
+
+.bubble:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+.unread { background: #fafbff; }
+
+/* left border colors by type */
+.info    { border-color: #3b82f6; }
+.error   { border-color: #ef4444; }
+.warning { border-color: #f59e0b; }
+.deploy  { border-color: #8b5cf6; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.senderLogo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.typeIcon {
+  font-size: 15px;
+}
+
+.info    .typeIcon { color: #3b82f6; }
+.error   .typeIcon { color: #ef4444; }
+.warning .typeIcon { color: #f59e0b; }
+.deploy  .typeIcon { color: #8b5cf6; }
+
+.typeBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.badge_info    { background: #dbeafe; color: #1d4ed8; }
+.badge_error   { background: #fee2e2; color: #b91c1c; }
+.badge_warning { background: #fef3c7; color: #92400e; }
+.badge_deploy  { background: #ede9fe; color: #6d28d9; }
+
+.unreadDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3b82f6;
+  flex-shrink: 0;
+}
+
+.time {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.iconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #adb5bd;
+  padding: 2px 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+
+.iconBtn:hover { color: #6d28d9; background: #f3f0ff; }
+.iconBtnActive { color: #6d28d9; }
+
+.message {
+  font-size: 0.88rem;
+  color: #212529;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.payloadLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: #3b82f6;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.payloadLink:hover { text-decoration: underline; }
+
+.payloadSection {
+  margin-top: 0.5rem;
+}
+
+.payloadToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.payloadToggle:hover { color: #212529; }
+
+.payload {
+  margin-top: 0.4rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  color: #495057;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}

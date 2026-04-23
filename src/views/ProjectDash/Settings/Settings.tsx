@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../../components/firebase/firebase';
 import { useAppSelector } from '../../../store';
-import { updateProject, addMember, removeMember } from '../../../db/projects/projectRepo';
+import { updateProject, addMember, removeMember, regenerateApiKey } from '../../../db/projects/projectRepo';
 import { MemberRole } from '../../../enums/MemberRole';
 import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
@@ -20,6 +20,7 @@ const Settings = () => {
 
   const [addEmail, setAddEmail] = useState('');
   const [addingMember, setAddingMember] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     if (project) {
@@ -55,6 +56,19 @@ const Settings = () => {
 
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(project.apiKey).then(() => toast.success('API key copiata'));
+  };
+
+  const handleRegenerateApiKey = async () => {
+    if (!confirm('Rigenerare la API key? La chiave precedente smetterà di funzionare immediatamente.')) return;
+    setRegenerating(true);
+    try {
+      await regenerateApiKey(project.id);
+      toast.success('API key rigenerata');
+    } catch {
+      toast.error('Errore nella rigenerazione');
+    } finally {
+      setRegenerating(false);
+    }
   };
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -145,6 +159,10 @@ const Settings = () => {
             <Btn version="outline" color="secondary" onClick={handleCopyApiKey}>
               <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>content_copy</span>
               {' '}Copia
+            </Btn>
+            <Btn version="outline" color="danger" loading={regenerating} onClick={handleRegenerateApiKey}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>autorenew</span>
+              {' '}Rigenera
             </Btn>
           </div>
         </div>
