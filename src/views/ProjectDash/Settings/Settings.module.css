@@ -85,3 +85,32 @@
 .removeBtn:hover {
   color: #dc3545;
 }
+
+/* Danger zone */
+.dangerSection {
+  border-color: rgba(220, 53, 69, 0.25);
+  background: rgba(220, 53, 69, 0.02);
+}
+
+.dangerTitle {
+  color: #dc3545;
+}
+
+.dangerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dangerLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.dangerHint {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.2rem;
+}

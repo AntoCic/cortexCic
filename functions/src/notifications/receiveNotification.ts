@@ -35,13 +35,10 @@ async function sendPushToProjectMembers(
 
   const fcmMessage: admin.messaging.MulticastMessage = {
     tokens: validTokens,
-    notification: {
+    data: {
       title: `[${TYPE_LABEL[type]}] cortexCic`,
       body: message,
-    },
-    data: payloadUrl ? { url: payloadUrl } : {},
-    webpush: {
-      fcmOptions: payloadUrl ? { link: payloadUrl } : undefined,
+      ...(payloadUrl ? { url: payloadUrl } : {}),
     },
   };
 

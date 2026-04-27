@@ -8,6 +8,7 @@ import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
 import type { Timestamp } from 'firebase/firestore';
 import { Timestamp as FsTimestamp } from 'firebase/firestore';
+import DeleteProjectModal from './cmp/DeleteProjectModal';
 import styles from './Settings.module.css';
 
 const Settings = () => {
@@ -21,6 +22,7 @@ const Settings = () => {
   const [addEmail, setAddEmail] = useState('');
   const [addingMember, setAddingMember] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
     if (project) {
@@ -207,7 +209,30 @@ const Settings = () => {
             </div>
           </form>
         </div>
+        {/* Danger zone */}
+        <div className={`${styles.section} ${styles.dangerSection}`}>
+          <div className={`${styles.sectionTitle} ${styles.dangerTitle}`}>Zona pericolosa</div>
+          <div className={styles.dangerRow}>
+            <div>
+              <div className={styles.dangerLabel}>Elimina progetto</div>
+              <div className={styles.dangerHint}>
+                Una volta eliminato, non sarà possibile recuperare i dati.
+              </div>
+            </div>
+            <Btn color="danger" version="outline" onClick={() => setShowDelete(true)}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>delete</span>
+              {' '}Elimina
+            </Btn>
+          </div>
+        </div>
       </div>
+
+      <DeleteProjectModal
+        show={showDelete}
+        onClose={() => setShowDelete(false)}
+        projectId={project.id}
+        projectName={project.name}
+      />
     </div>
   );
 };
