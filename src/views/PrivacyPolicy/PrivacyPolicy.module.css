@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+.root {
+  --bg-0: #06101d;
+  --bg-1: #0a1f34;
+  --bg-2: #0f2d47;
+  --ink-0: #eef9ff;
+  --ink-1: #bad1e3;
+  --ink-2: #8ca8bf;
+  --line: rgba(255, 255, 255, 0.14);
+  --cyan: #0ac9ff;
+  --green: #0ae448;
+  min-height: 100vh;
+  color: var(--ink-0);
+  font-family: 'Manrope', sans-serif;
+  background:
+    radial-gradient(900px 540px at -14% -12%, rgba(10, 228, 72, 0.22), rgba(10, 228, 72, 0) 62%),
+    radial-gradient(1020px 600px at 108% 0%, rgba(10, 201, 255, 0.22), rgba(10, 201, 255, 0) 62%),
+    linear-gradient(160deg, var(--bg-0), var(--bg-1) 52%, var(--bg-2));
+}
+
+.nav {
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink-0);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.brand:hover {
+  color: var(--cyan);
+}
+
+.logo {
+  color: var(--green);
+  font-size: 1.3rem;
+}
+
+.main {
+  padding: 4rem 0 6rem;
+}
+
+.content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.kicker {
+  margin: 0 0 0.75rem;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.5rem;
+  color: var(--ink-0);
+}
+
+.meta {
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  margin: 0 0 3rem;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+.section h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink-0);
+  margin: 0 0 1rem;
+  letter-spacing: -0.01em;
+}
+
+.section p {
+  color: var(--ink-1);
+  line-height: 1.7;
+  margin: 0 0 0.75rem;
+}
+
+.section p:last-child {
+  margin-bottom: 0;
+}
+
+.section ul {
+  color: var(--ink-1);
+  line-height: 1.7;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.section ul li {
+  margin-bottom: 0.4rem;
+}
+
+.section a {
+  color: var(--cyan);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.section a:hover {
+  color: var(--ink-0);
+}
+
+.footer {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 0.85rem;
+  text-align: center;
+}

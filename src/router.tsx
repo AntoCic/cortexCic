@@ -10,9 +10,11 @@ import Settings from './views/ProjectDash/Settings/Settings';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import AppLayout from './components/AppLayout/AppLayout';
 import Notes from './views/Notes/Notes';
+import PrivacyPolicy from './views/PrivacyPolicy/PrivacyPolicy';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Home /> },
+  { path: '/privacy-policy', element: <PrivacyPolicy /> },
   {
     element: <ProtectedRoute />,
     children: [
