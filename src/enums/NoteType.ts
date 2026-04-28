@@ -1,5 +1,6 @@
 export const NoteType = {
   general: 'general',
+  copy: 'copy',
   code: 'code',
   link: 'link',
   idea: 'idea',
@@ -10,6 +11,7 @@ export type NoteTypeValue = (typeof NoteType)[keyof typeof NoteType];
 
 export const NoteTypeLabel: Record<NoteTypeValue, string> = {
   general: 'Generale',
+  copy: 'Copia',
   code: 'Codice',
   link: 'Link',
   idea: 'Idea',
@@ -18,6 +20,7 @@ export const NoteTypeLabel: Record<NoteTypeValue, string> = {
 
 export const NoteTypeColor: Record<NoteTypeValue, string> = {
   general: '#6c757d',
+  copy: '#6f42c1',
   code: '#0d6efd',
   link: '#0dcaf0',
   idea: '#ffc107',

@@ -3,10 +3,11 @@ import type { NoteTypeValue } from '../../enums/NoteType';
 
 export interface Note {
   id: string;
-  title: string;
+  title?: string;
   content: string;
   type?: NoteTypeValue;
   tags?: string[];
+  link?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

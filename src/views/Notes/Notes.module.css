@@ -196,6 +196,20 @@
   color: #6c757d;
 }
 
+.noteLink {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #0d6efd;
+  text-decoration: none;
+  word-break: break-all;
+  margin-top: 0.1rem;
+}
+
+.noteLink:hover {
+  text-decoration: underline;
+}
+
 /* Card actions */
 .noteCardActions {
   display: flex;

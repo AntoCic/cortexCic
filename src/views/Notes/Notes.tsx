@@ -64,10 +64,11 @@ const Notes = () => {
   };
 
   const handleSave = async (data: {
-    title: string;
+    title?: string;
     content: string;
     type?: NoteTypeValue;
     tags?: string[];
+    link?: string;
   }) => {
     if (!user) return;
     if (editTarget) {
@@ -89,7 +90,7 @@ const Notes = () => {
 
   const handleDelete = async (note: Note) => {
     if (!user) return;
-    if (!confirm(`Eliminare "${note.title}"?`)) return;
+    if (!confirm(`Eliminare "${note.title ?? 'questa nota'}"?`)) return;
     try {
       await deleteNote(user.uid, note.id);
       dispatch(removeNote(note.id));
@@ -109,7 +110,7 @@ const Notes = () => {
     return items.filter((n) => {
       if (typeFilter && n.type !== typeFilter) return false;
       if (!q) return true;
-      if (n.title.toLowerCase().includes(q)) return true;
+      if (n.title?.toLowerCase().includes(q)) return true;
       if (n.tags?.some((t) => t.toLowerCase().includes(q))) return true;
       if (stripHtml(n.content).toLowerCase().includes(q)) return true;
       return false;

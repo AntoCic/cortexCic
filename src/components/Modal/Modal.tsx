@@ -10,6 +10,7 @@ export interface ModalProps {
   size?: 'sm' | 'lg' | 'xl';
   centered?: boolean;
   scrollable?: boolean;
+  fullscreen?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -21,6 +22,7 @@ export const Modal: React.FC<ModalProps> = ({
   size,
   centered = false,
   scrollable = false,
+  fullscreen = false,
 }) => {
   useEffect(() => {
     if (show) {
@@ -41,12 +43,13 @@ export const Modal: React.FC<ModalProps> = ({
   const sizeClass = size ? `modal-${size}` : '';
   const centeredClass = centered ? 'modal-dialog-centered' : '';
   const scrollableClass = scrollable ? 'modal-dialog-scrollable' : '';
+  const fullscreenClass = fullscreen ? 'modal-fullscreen' : '';
 
   return (
     <>
       <div className={styles.backdrop} onClick={onClose} />
       <div className="modal show d-block" role="dialog">
-        <div className={`modal-dialog ${sizeClass} ${centeredClass} ${scrollableClass}`.trim()}>
+        <div className={`modal-dialog ${sizeClass} ${centeredClass} ${scrollableClass} ${fullscreenClass}`.trim()}>
           <div className="modal-content">
             {title && (
               <div className="modal-header">

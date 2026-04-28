@@ -48,7 +48,7 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
           )}
           <span className={styles.noteDate}>{formatDate(note.updatedAt)}</span>
         </div>
-        <h3 className={styles.noteTitle}>{note.title}</h3>
+        {note.title && <h3 className={styles.noteTitle}>{note.title}</h3>}
         {preview && <p className={styles.notePreview}>{preview}{stripHtml(note.content).length > 160 ? '…' : ''}</p>}
         {note.tags && note.tags.length > 0 && (
           <div className={styles.tagList}>
@@ -58,6 +58,18 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
           </div>
         )}
       </div>
+
+      {note.link && (
+        <a
+          href={note.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.noteLink}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>link</span>
+          {note.link}
+        </a>
+      )}
 
       <div className={styles.noteCardActions}>
         <button className={styles.actionBtn} onClick={handleCopy} title="Copia contenuto">
