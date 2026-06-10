@@ -8,6 +8,7 @@ import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
 import type { Timestamp } from 'firebase/firestore';
 import { Timestamp as FsTimestamp } from 'firebase/firestore';
+import { HUB_LOG_URL } from '../../../firebase-config';
 import DeleteProjectModal from './cmp/DeleteProjectModal';
 import styles from './Settings.module.css';
 
@@ -58,6 +59,55 @@ const Settings = () => {
 
   const handleCopyApiKey = () => {
     navigator.clipboard.writeText(project.apiKey).then(() => toast.success('API key copiata'));
+  };
+
+  const handleCopyEndpoint = () => {
+    navigator.clipboard.writeText(HUB_LOG_URL).then(() => toast.success('Endpoint copiato'));
+  };
+
+  const integrationPrompt = `Implement \`hubLog\` in this project to integrate with cortexCic.
+
+Endpoint URL(HUB_LOG_URL): ${HUB_LOG_URL}
+API Key(HUB_LOG_API_KEY): ${project.apiKey}
+
+Store both values in environment variables or secrets — never hardcode them.
+
+---
+
+Create a \`hubLog\` utility (e.g. \`src/lib/hubLog.ts\` or \`utils/hubLog.ts\`). It must expose:
+
+  hubLog.info(message, payload?)     // significant runtime events
+  hubLog.error(message, payload?)    // exceptions and production errors
+  hubLog.warning(message, payload?)  // degraded-state situations
+  hubLog.deploy(message, payload?)   // deployment events
+
+Each method POSTs to the endpoint with:
+  - Header: \`api-key: <HUB_LOG_API_KEY>\`
+  - Body: { message: string, type: 'info'|'error'|'warning'|'deploy', payload?: object, showPush?: boolean }
+
+Frontend projects: do NOT call the endpoint directly from the browser.
+Route log calls through a backend handler that keeps the API key server-side.
+
+---
+
+After implementing hubLog, apply it throughout the codebase wherever production
+errors are swallowed, console-logged, or significant events occur.
+
+Then add a short section to CLAUDE.md (or AGENTS.md):
+
+## Logging & error reporting
+
+Use \`hubLog\` (cortexCic integration) for logging and error reporting.
+
+- \`hubLog.error()\` — exceptions and production errors
+- \`hubLog.warning()\` — degraded-state situations
+- \`hubLog.info()\` — significant runtime events
+- \`hubLog.deploy()\` — deployment events
+
+Do not use \`console.error\` for production errors — route them through \`hubLog\`.`;
+
+  const handleCopyPrompt = () => {
+    navigator.clipboard.writeText(integrationPrompt).then(() => toast.success('Prompt copiato'));
   };
 
   const handleRegenerateApiKey = async () => {
@@ -151,6 +201,8 @@ const Settings = () => {
           <p className="text-muted" style={{ fontSize: '0.85rem' }}>
             Usa questa chiave nei tuoi progetti esterni per inviare notifiche a cortexCic.
           </p>
+
+          <div className={styles.fieldLabel}>API Key</div>
           <div className={styles.apiKeyRow}>
             <input
               type="text"
@@ -167,6 +219,37 @@ const Settings = () => {
               {' '}Rigenera
             </Btn>
           </div>
+
+          <div className={styles.fieldLabel} style={{ marginTop: '1rem' }}>Endpoint</div>
+          <div className={styles.apiKeyRow}>
+            <input
+              type="text"
+              className={`form-control ${styles.apiKeyInput}`}
+              value={HUB_LOG_URL}
+              readOnly
+            />
+            <Btn version="outline" color="secondary" onClick={handleCopyEndpoint}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>content_copy</span>
+              {' '}Copia
+            </Btn>
+          </div>
+
+          <div className={styles.promptHeader}>
+            <span className={styles.fieldLabel} style={{ margin: 0 }}>Prompt di integrazione</span>
+            <Btn version="outline" color="secondary" onClick={handleCopyPrompt}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>content_copy</span>
+              {' '}Copia prompt
+            </Btn>
+          </div>
+          <p className="text-muted mb-2" style={{ fontSize: '0.8rem' }}>
+            Copia e incolla questo prompt in Claude Code (o qualsiasi AI agent) nel progetto esterno per implementare <code>hubLog</code>.
+          </p>
+          <textarea
+            className={styles.promptTextarea}
+            value={integrationPrompt}
+            readOnly
+            rows={6}
+          />
         </div>
 
         {/* Members */}

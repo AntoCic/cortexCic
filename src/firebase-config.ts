@@ -10,3 +10,6 @@ export const firebaseConfig = {
 
 export const VAPID_PUBLIC_KEY =
   "BIha2JlPTcIhM1AupT-oqtnJvJfSKVnoDz6u1FXbjum1BJlkLcFQ3mmfyObGyiG3YyoeNji3PKmjCyQ1vtkD-qA" as const;
+
+export const HUB_LOG_URL =
+  `https://europe-west1-${firebaseConfig.projectId}.cloudfunctions.net/notify` as const;

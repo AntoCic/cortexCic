@@ -79,14 +79,18 @@ const NotificationsPage = () => {
       dispatch(setLoadingMore(true));
       const oldest = items[items.length - 1].createdAt;
       const prevHeight = el.scrollHeight;
-      const { items: older, hasMore: more } = await loadOlderNotifications(project!.id, oldest);
-      dispatch(prependOlder({ items: older, hasMore: more }));
-      // restore scroll position so user doesn't jump to top
-      requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight - prevHeight;
-      });
-      if (older.length && uid) {
-        markNotificationsRead(project!.id, older.map((n) => n.id), uid).catch(() => null);
+      try {
+        const { items: older, hasMore: more } = await loadOlderNotifications(project!.id, oldest);
+        dispatch(prependOlder({ items: older, hasMore: more }));
+        // restore scroll position so user doesn't jump to top
+        requestAnimationFrame(() => {
+          el.scrollTop = el.scrollHeight - prevHeight;
+        });
+        if (older.length && uid) {
+          markNotificationsRead(project!.id, older.map((n) => n.id), uid).catch(() => null);
+        }
+      } catch {
+        dispatch(setLoadingMore(false));
       }
     }
   }, [hasMore, loadingMore, items, project?.id, uid, dispatch]);

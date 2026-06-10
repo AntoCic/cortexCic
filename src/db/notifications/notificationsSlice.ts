@@ -23,7 +23,11 @@ const notificationsSlice = createSlice({
         (existing) => !action.payload.find((n) => n.id === existing.id),
       );
       state.items = [...action.payload, ...older];
-      state.hasMore = action.payload.length >= 30;
+      // Only update hasMore if no older pages have been loaded yet;
+      // otherwise prependOlder already set the correct value.
+      if (!older.length) {
+        state.hasMore = action.payload.length >= 30;
+      }
     },
     prependOlder(
       state,
@@ -31,7 +35,8 @@ const notificationsSlice = createSlice({
     ) {
       const newIds = new Set(action.payload.items.map((n) => n.id));
       const deduped = state.items.filter((n) => !newIds.has(n.id));
-      state.items = [...action.payload.items, ...deduped];
+      // items are stored newest-first; older items belong at the END
+      state.items = [...deduped, ...action.payload.items];
       state.hasMore = action.payload.hasMore;
       state.loadingMore = false;
     },
