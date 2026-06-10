@@ -33,9 +33,10 @@ interface Props {
   notif: Notification;
   uid: string;
   onPin: () => void;
+  onDownload: () => void;
 }
 
-const NotificationMessage = ({ notif, uid, onPin }: Props) => {
+const NotificationMessage = ({ notif, uid, onPin, onDownload }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const isRead = notif.readByUids.includes(uid);
   const isPinned = notif.pinnedByUids.includes(uid);
@@ -60,6 +61,13 @@ const NotificationMessage = ({ notif, uid, onPin }: Props) => {
         </div>
         <div className={styles.right}>
           <span className={styles.time}>{formatTime(notif.createdAt)}</span>
+          <button
+            className={styles.iconBtn}
+            onClick={onDownload}
+            title="Scarica JSON"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 15 }}>download</span>
+          </button>
           <button
             className={`${styles.iconBtn} ${isPinned ? styles.iconBtnActive : ''}`}
             onClick={onPin}

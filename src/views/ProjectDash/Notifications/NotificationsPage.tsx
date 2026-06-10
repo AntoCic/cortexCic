@@ -12,10 +12,36 @@ import {
   markNotificationsRead,
   togglePin,
 } from '../../../db/notifications/notificationRepo';
-import type { NotificationType } from '../../../db/notifications/Notification';
+import type { Notification, NotificationType } from '../../../db/notifications/Notification';
 import NotificationMessage from './cmp/NotificationMessage';
 import NotificationFilters from './cmp/NotificationFilters';
 import styles from './NotificationsPage.module.css';
+
+const EXPORT_COUNTS = [3, 5, 10, 20, 30, 50, 100] as const;
+
+function serializeNotif(n: Notification) {
+  return {
+    id: n.id,
+    projectId: n.projectId,
+    type: n.type,
+    message: n.message,
+    ...(n.payload !== undefined ? { payload: n.payload } : {}),
+    showPush: n.showPush,
+    createdAt: n.createdAt?.toDate().toISOString() ?? null,
+    readByUids: n.readByUids,
+    pinnedByUids: n.pinnedByUids,
+  };
+}
+
+function downloadJson(data: unknown, filename: string) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const ALL_TYPES = new Set<NotificationType>(['info', 'error', 'warning', 'deploy']);
 
@@ -125,6 +151,16 @@ const NotificationsPage = () => {
   const displayItems = [...filtered].reverse();
   const unreadCount = items.filter((n) => !n.readByUids.includes(uid)).length;
 
+  const handleExportBulk = (n: number) => {
+    const slice = displayItems.slice(-n);
+    const ts = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    downloadJson([...slice].reverse().map(serializeNotif), `cortexcic-${slice.length}-notifications-${ts}.json`);
+  };
+
+  const handleDownloadSingle = (notif: Notification) => {
+    downloadJson(serializeNotif(notif), `notif-${notif.id}-${notif.type}.json`);
+  };
+
   if (!project) return null;
 
   return (
@@ -149,6 +185,7 @@ const NotificationsPage = () => {
                 notif={n}
                 uid={uid}
                 onPin={() => handleTogglePin(n.id, n.pinnedByUids.includes(uid))}
+                onDownload={() => handleDownloadSingle(n)}
               />
             ))}
           </div>
@@ -182,11 +219,33 @@ const NotificationsPage = () => {
               notif={n}
               uid={uid}
               onPin={() => handleTogglePin(n.id, n.pinnedByUids.includes(uid))}
+              onDownload={() => handleDownloadSingle(n)}
             />
           ))}
         </div>
 
         <div ref={bottomRef} />
+      </div>
+
+      <div className={styles.exportBar}>
+        <span className={styles.exportLabel}>
+          <span className="material-symbols-outlined" style={{ fontSize: 14, verticalAlign: 'text-bottom' }}>download</span>
+          {' '}Esporta ultimi
+        </span>
+        {EXPORT_COUNTS.map((n) => (
+          <button
+            key={n}
+            className={`${styles.exportBtn} ${displayItems.length === 0 ? styles.exportBtnDisabled : ''}`}
+            onClick={() => handleExportBulk(n)}
+            disabled={displayItems.length === 0}
+            title={`Esporta ultimi ${Math.min(n, displayItems.length)} messaggi (filtrati)`}
+          >
+            {n}
+          </button>
+        ))}
+        {displayItems.length > 0 && (
+          <span className={styles.exportCount}>{displayItems.length} visibili</span>
+        )}
       </div>
     </div>
   );

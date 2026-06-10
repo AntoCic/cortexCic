@@ -75,3 +75,60 @@
   max-height: 180px;
   overflow-y: auto;
 }
+
+/* export bar */
+.exportBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  background: #fff;
+  flex-wrap: wrap;
+}
+
+.exportLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 0.2rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.exportBtn {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #495057;
+  padding: 0.15rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  line-height: 1.5;
+}
+
+.exportBtn:hover:not(:disabled) {
+  border-color: #6c63ff;
+  color: #6c63ff;
+  background: rgba(108, 99, 255, 0.06);
+}
+
+.exportBtnDisabled,
+.exportBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.exportCount {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #adb5bd;
+  flex-shrink: 0;
+}
