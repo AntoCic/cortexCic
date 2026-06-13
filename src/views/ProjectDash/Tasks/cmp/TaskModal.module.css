@@ -1,0 +1,119 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.hero {
+  padding: 1rem 1rem 0.95rem;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(108, 99, 255, 0.18), transparent 38%),
+    linear-gradient(145deg, #f8f9ff 0%, #f5f7fb 100%);
+  border: 1px solid rgba(108, 99, 255, 0.12);
+}
+
+.heroTitle {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.heroText {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #6c757d;
+  line-height: 1.55;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sectionLabel {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #343a40;
+  margin: 0;
+}
+
+.optionGrid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.optionGrid4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.optionGrid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.optionCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  text-align: left;
+  color: #343a40;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.optionCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(108, 99, 255, 0.24);
+  box-shadow: 0 10px 24px rgba(108, 99, 255, 0.08);
+}
+
+.optionCardActive {
+  border-color: var(--option-color, #6c63ff);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--option-color, #6c63ff) 16%, transparent);
+  background: color-mix(in srgb, var(--option-color, #6c63ff) 10%, white);
+}
+
+.optionIcon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--option-color, #6c63ff);
+  background: color-mix(in srgb, var(--option-color, #6c63ff) 12%, white);
+  flex-shrink: 0;
+}
+
+.optionContent {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.optionTitle {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #212529;
+}
+
+.optionDesc {
+  font-size: 0.74rem;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+@media (max-width: 767px) {
+  .optionGrid4,
+  .optionGrid3 {
+    grid-template-columns: 1fr;
+  }
+}

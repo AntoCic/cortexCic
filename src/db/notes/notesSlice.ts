@@ -2,6 +2,13 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { Note } from './Note';
 
+function noteTimeMs(note: Note): number {
+  const updatedAt = note.updatedAt as Note['updatedAt'] & { seconds?: number; toMillis?: () => number };
+  if (updatedAt?.toMillis) return updatedAt.toMillis();
+  if (typeof updatedAt?.seconds === 'number') return updatedAt.seconds * 1000;
+  return 0;
+}
+
 interface NotesState {
   items: Note[];
   hasMore: boolean;
@@ -39,7 +46,10 @@ const notesSlice = createSlice({
     },
     updateNote(state, action: PayloadAction<Partial<Note> & { id: string }>) {
       const idx = state.items.findIndex((n) => n.id === action.payload.id);
-      if (idx !== -1) state.items[idx] = { ...state.items[idx], ...action.payload };
+      if (idx !== -1) {
+        state.items[idx] = { ...state.items[idx], ...action.payload };
+        state.items.sort((a, b) => noteTimeMs(b) - noteTimeMs(a));
+      }
     },
     removeNote(state, action: PayloadAction<string>) {
       state.items = state.items.filter((n) => n.id !== action.payload);

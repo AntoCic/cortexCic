@@ -24,6 +24,13 @@ service firebase.storage {
     function isAdmin() {
       return hasUserPermission('SUPERADMIN') || hasUserPermission('ADMIN');
     }
+
+    function isProjectMember(projectId) {
+      return isSignedIn()
+        && firestore.exists(/databases/(default)/documents/projects/$(projectId))
+        && request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members;
+    }
+
     function isValidUpload(MB, contentType) {
       return request.resource != null
         && request.resource.size < MB * 1024 * 1024
@@ -35,9 +42,15 @@ service firebase.storage {
     // ====== USER  ======
     match /user/{userId}/{path=**} {
       allow read: if isSignedIn() && request.auth.uid == userId;
-      allow write: if isSignedIn() && request.auth.uid == userId && isValidUpload(10, null);
+      allow create, update: if isSignedIn() && request.auth.uid == userId && isValidUpload(10, null);
       allow delete: if isSignedIn() && request.auth.uid == userId;
-    }    
+    }
+
+    match /projects/{projectId}/{path=**} {
+      allow read: if isProjectMember(projectId);
+      allow create, update: if isProjectMember(projectId) && isValidUpload(10, null);
+      allow delete: if isProjectMember(projectId);
+    }
     
     // Catch-all
     match /{allPaths=**} {

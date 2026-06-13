@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import AttachmentPanel from '../../../components/AttachmentPanel/AttachmentPanel';
+import { noteContentToPlainText } from '../../../db/notes/noteContent';
 import { NoteTypeLabel, NoteTypeColor } from '../../../enums/NoteType';
 import type { Note } from '../../../db/notes/Note';
 import styles from '../Notes.module.css';
@@ -7,12 +9,6 @@ interface Props {
   note: Note;
   onEdit: (note: Note) => void;
   onDelete: (note: Note) => void;
-}
-
-function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent ?? div.innerText ?? '';
 }
 
 function formatDate(ts: Note['updatedAt']): string {
@@ -25,14 +21,15 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    const text = stripHtml(note.content);
+    const text = noteContentToPlainText(note.content);
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     });
   };
 
-  const preview = stripHtml(note.content).slice(0, 160).trim();
+  const plainContent = noteContentToPlainText(note.content);
+  const preview = plainContent.slice(0, 160).trim();
 
   return (
     <div className={styles.noteCard}>
@@ -49,7 +46,7 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
           <span className={styles.noteDate}>{formatDate(note.updatedAt)}</span>
         </div>
         {note.title && <h3 className={styles.noteTitle}>{note.title}</h3>}
-        {preview && <p className={styles.notePreview}>{preview}{stripHtml(note.content).length > 160 ? '…' : ''}</p>}
+        {preview && <p className={styles.notePreview}>{preview}{plainContent.length > 160 ? '…' : ''}</p>}
         {note.tags && note.tags.length > 0 && (
           <div className={styles.tagList}>
             {note.tags.map((tag) => (
@@ -69,6 +66,12 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
           <span className="material-symbols-outlined" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>link</span>
           {note.link}
         </a>
+      )}
+
+      {!!note.attachments?.length && (
+        <div className={styles.noteAttachments}>
+          <AttachmentPanel attachments={note.attachments} compact hideHeader />
+        </div>
       )}
 
       <div className={styles.noteCardActions}>

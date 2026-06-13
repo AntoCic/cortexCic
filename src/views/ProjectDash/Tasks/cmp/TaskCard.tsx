@@ -1,13 +1,16 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import AttachmentPanel from '../../../../components/AttachmentPanel/AttachmentPanel';
+import { TaskCategory, TASK_CATEGORY_ICONS, TASK_CATEGORY_LABELS } from '../../../../enums/TaskCategory';
 import type { Task } from '../../../../db/tasks/Task';
+import { TaskUrgency, TASK_URGENCY_COLORS, TASK_URGENCY_ICONS, TASK_URGENCY_LABELS } from '../../../../enums/TaskUrgency';
 import styles from '../Tasks.module.css';
 
 interface Props {
   task: Task;
   onEdit: (task: Task) => void;
-  onDelete: (taskId: string) => void;
+  onDelete: (task: Task) => void;
 }
 
 const TaskCard = ({ task, onEdit, onDelete }: Props) => {
@@ -20,6 +23,8 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
     transform: CSS.Transform.toString(transform),
     transition,
   };
+  const taskCategory = task.category ?? TaskCategory.Feature;
+  const taskUrgency = task.urgency ?? TaskUrgency.Medium;
 
   return (
     <motion.div
@@ -32,8 +37,35 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
       {...attributes}
       {...listeners}
     >
+      <div className={styles.taskMeta}>
+        <span className={styles.taskBadge}>
+          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+            {TASK_CATEGORY_ICONS[taskCategory]}
+          </span>
+          {TASK_CATEGORY_LABELS[taskCategory]}
+        </span>
+        {taskUrgency && (
+          <span
+            className={styles.taskBadge}
+            style={{
+              color: TASK_URGENCY_COLORS[taskUrgency],
+              background: `${TASK_URGENCY_COLORS[taskUrgency]}14`,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+              {TASK_URGENCY_ICONS[taskUrgency]}
+            </span>
+            {TASK_URGENCY_LABELS[taskUrgency]}
+          </span>
+        )}
+      </div>
       <div className={styles.taskTitle}>{task.title}</div>
       {task.description && <div className={styles.taskDesc}>{task.description}</div>}
+      {!!task.attachments?.length && (
+        <div className={styles.taskAttachments}>
+          <AttachmentPanel attachments={task.attachments} compact hideHeader />
+        </div>
+      )}
       <div className={styles.taskActions}>
         <button
           className={styles.taskActionBtn}
@@ -44,7 +76,7 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
         </button>
         <button
           className={styles.taskActionBtn}
-          onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+          onClick={(e) => { e.stopPropagation(); onDelete(task); }}
           title="Elimina"
         >
           <span className="material-symbols-outlined" style={{ fontSize: 15 }}>delete</span>

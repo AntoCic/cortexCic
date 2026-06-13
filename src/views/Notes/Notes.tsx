@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Timestamp } from 'firebase/firestore';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   setNotes,
@@ -12,32 +14,31 @@ import {
   setError,
   resetNotes,
 } from '../../db/notes/notesSlice';
-import { getNotes, createNote, updateNote as repoUpdateNote, deleteNote } from '../../db/notes/noteRepo';
+import { deleteStoredAttachments, uploadAttachments } from '../../db/attachments/attachmentStorage';
+import { getNotes, getNoteById, createNote, updateNote as repoUpdateNote, deleteNote } from '../../db/notes/noteRepo';
 import { useAuth } from '../../db/auth/useAuth';
 import { Btn } from '../../components/Btn/Btn';
 import { toast } from '../../components/toast/toast';
 import { NoteType, NoteTypeLabel, NoteTypeColor } from '../../enums/NoteType';
 import type { NoteTypeValue } from '../../enums/NoteType';
 import type { Note } from '../../db/notes/Note';
+import type { Attachment } from '../../db/attachments/Attachment';
+import { noteContentToPlainText } from '../../db/notes/noteContent';
 import { staggerContainer, fadeUp } from '../../styles/motionVariants';
 import NoteCard from './cmp/NoteCard';
 import NoteModal from './cmp/NoteModal';
 import styles from './Notes.module.css';
 
-function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent ?? div.innerText ?? '';
-}
-
 const Notes = () => {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { noteId } = useParams<{ noteId?: string }>();
   const { items, hasMore, loading, loadingMore } = useAppSelector((s) => s.notes);
   const shouldReduceMotion = useReducedMotion();
 
-  const [showModal, setShowModal] = useState(false);
-  const [editTarget, setEditTarget] = useState<Note | null>(null);
+  const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [routeNote, setRouteNote] = useState<Note | null>(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<NoteTypeValue | ''>('');
 
@@ -50,6 +51,41 @@ const Notes = () => {
       .catch((err) => dispatch(setError(err.message)));
   }, [user, dispatch]);
 
+  useEffect(() => {
+    if (!noteId) {
+      return;
+    }
+
+    const existingNote = items.find((item) => item.id === noteId);
+    if (existingNote) return;
+
+    if (!user) return;
+
+    let cancelled = false;
+
+    getNoteById(user.uid, noteId)
+      .then((note) => {
+        if (cancelled) return;
+
+        if (!note) {
+          navigate('/notes', { replace: true });
+          return;
+        }
+
+        setRouteNote(note);
+        dispatch(addNote(note));
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error('[Notes] failed to load note from route', { error, noteId });
+        navigate('/notes', { replace: true });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, items, navigate, noteId, user]);
+
   const handleLoadMore = async () => {
     if (!user || !items.length) return;
     dispatch(setLoadingMore(true));
@@ -57,53 +93,104 @@ const Notes = () => {
       const last = items[items.length - 1];
       const res = await getNotes(user.uid, last.updatedAt);
       dispatch(appendNotes(res));
-    } catch (err) {
+    } catch {
       dispatch(setLoadingMore(false));
       toast.error('Errore nel caricamento');
     }
   };
 
-  const handleSave = async (data: {
+  const handleCreate = async (data: {
     title?: string;
     content: string;
     type?: NoteTypeValue;
     tags?: string[];
     link?: string;
+    attachments?: Attachment[];
   }) => {
-    if (!user) return;
-    if (editTarget) {
-      await repoUpdateNote(user.uid, editTarget.id, data);
-      dispatch(updateNote({ id: editTarget.id, ...data }));
-      toast.success('Nota aggiornata');
-    } else {
-      const note = await createNote(user.uid, data);
-      dispatch(addNote(note));
-      toast.success('Nota creata');
+    if (!user) throw new Error('Utente non autenticato');
+    const note = await createNote(user.uid, data);
+    dispatch(addNote(note));
+    return note;
+  };
+
+  const handleUpdate = async (noteId: string, data: {
+    title?: string;
+    content: string;
+    type?: NoteTypeValue;
+    tags?: string[];
+    link?: string;
+    attachments?: Attachment[];
+  }) => {
+    if (!user) throw new Error('Utente non autenticato');
+    await repoUpdateNote(user.uid, noteId, data);
+    dispatch(updateNote({ id: noteId, ...data, updatedAt: Timestamp.now() }));
+  };
+
+  const deleteNoteRecord = async (note: Note, showSuccessToast = false) => {
+    if (!user) throw new Error('Utente non autenticato');
+
+    if (note.attachments?.length) {
+      await deleteStoredAttachments(note.attachments);
     }
-    setEditTarget(null);
+
+    await deleteNote(user.uid, note.id);
+    dispatch(removeNote(note.id));
+    setRouteNote((prev) => (prev?.id === note.id ? null : prev));
+
+    if (noteId === note.id) {
+      navigate('/notes', { replace: true });
+    }
+
+    if (showSuccessToast) {
+      toast.success('Nota eliminata');
+    }
   };
 
   const handleEdit = (note: Note) => {
-    setEditTarget(note);
-    setShowModal(true);
+    navigate(`/notes/${note.id}`);
   };
 
   const handleDelete = async (note: Note) => {
-    if (!user) return;
     if (!confirm(`Eliminare "${note.title ?? 'questa nota'}"?`)) return;
     try {
-      await deleteNote(user.uid, note.id);
-      dispatch(removeNote(note.id));
-      toast.success('Nota eliminata');
+      await deleteNoteRecord(note, true);
     } catch {
       toast.error('Errore nell\'eliminazione');
     }
   };
 
-  const handleModalClose = () => {
-    setShowModal(false);
-    setEditTarget(null);
+  const handleUploadAttachments = async (noteId: string, files: File[]) => {
+    if (!user) throw new Error('Utente non autenticato');
+    return uploadAttachments(`user/${user.uid}/notes/${noteId}`, files);
   };
+
+  const handleModalClose = () => {
+    setIsCreatingNote(false);
+    setRouteNote(null);
+
+    if (noteId) {
+      navigate('/notes');
+    }
+  };
+
+  const handleCreateNote = () => {
+    setIsCreatingNote(true);
+  };
+
+  const handlePersistedNote = (note: Note) => {
+    setIsCreatingNote(false);
+    setRouteNote(note);
+
+    if (noteId !== note.id) {
+      navigate(`/notes/${note.id}`);
+    }
+  };
+
+  const activeRouteNote = noteId
+    ? (items.find((item) => item.id === noteId) ?? (routeNote?.id === noteId ? routeNote : null))
+    : null;
+  const showModal = isCreatingNote || Boolean(noteId && activeRouteNote);
+  const modalInitial = isCreatingNote ? null : activeRouteNote;
 
   const filteredNotes = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -112,7 +199,7 @@ const Notes = () => {
       if (!q) return true;
       if (n.title?.toLowerCase().includes(q)) return true;
       if (n.tags?.some((t) => t.toLowerCase().includes(q))) return true;
-      if (stripHtml(n.content).toLowerCase().includes(q)) return true;
+      if (noteContentToPlainText(n.content).toLowerCase().includes(q)) return true;
       return false;
     });
   }, [items, search, typeFilter]);
@@ -130,7 +217,7 @@ const Notes = () => {
           <h1 className={styles.pageTitle}>Le mie note</h1>
           <Btn
             color="primary"
-            onClick={() => { setEditTarget(null); setShowModal(true); }}
+            onClick={handleCreateNote}
           >
             <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>add</span>
             Nuova nota
@@ -200,7 +287,7 @@ const Notes = () => {
                   : 'Crea la tua prima nota per iniziare.'}
               </div>
               {!search && !typeFilter && (
-                <Btn color="primary" onClick={() => { setEditTarget(null); setShowModal(true); }}>
+                <Btn color="primary" onClick={handleCreateNote}>
                   Crea nota
                 </Btn>
               )}
@@ -228,8 +315,12 @@ const Notes = () => {
       <NoteModal
         show={showModal}
         onClose={handleModalClose}
-        onSave={handleSave}
-        initial={editTarget}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onDelete={deleteNoteRecord}
+        onUploadAttachments={handleUploadAttachments}
+        onPersistedNote={handlePersistedNote}
+        initial={modalInitial}
       />
     </div>
   );

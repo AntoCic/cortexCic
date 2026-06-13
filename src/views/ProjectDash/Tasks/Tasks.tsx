@@ -9,17 +9,21 @@ import {
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { useAppDispatch, useAppSelector } from '../../../store';
+import { deleteStoredAttachments, uploadAttachments } from '../../../db/attachments/attachmentStorage';
+import type { Attachment } from '../../../db/attachments/Attachment';
 import { setTasks, moveTask } from '../../../db/tasks/tasksSlice';
 import { subscribeProjectTasks, createTask, updateTask, deleteTask } from '../../../db/tasks/taskRepo';
 import { useAuth } from '../../../db/auth/useAuth';
+import { TaskCategory } from '../../../enums/TaskCategory';
 import { TaskStatus, TASK_STATUS_LABELS } from '../../../enums/TaskStatus';
 import type { TaskStatusValue } from '../../../enums/TaskStatus';
+import { TaskUrgency } from '../../../enums/TaskUrgency';
 import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
 import type { Task } from '../../../db/tasks/Task';
 import KanbanColumn from './cmp/KanbanColumn';
 import TaskCard from './cmp/TaskCard';
-import TaskModal from './cmp/TaskModal';
+import TaskModal, { type TaskModalValue } from './cmp/TaskModal';
 import styles from './Tasks.module.css';
 
 const COLUMNS: TaskStatusValue[] = [TaskStatus.Todo, TaskStatus.InProgress, TaskStatus.Done, TaskStatus.Block];
@@ -80,24 +84,68 @@ const Tasks = () => {
     const newOrder = computeOrder(colTasks, overIndex === -1 ? colTasks.length : overIndex);
 
     dispatch(moveTask({ taskId: draggedTask.id, newStatus, newOrder }));
-    updateTask(projectId, draggedTask.id, { status: newStatus, order: newOrder }).catch(() => {
+    updateTask(projectId, draggedTask.id, { status: newStatus, order: newOrder, updatedByUid: user?.uid }).catch(() => {
       toast.error('Errore nel salvataggio della task');
     });
   };
 
-  const handleSaveTask = async (data: { title: string; description: string; status: TaskStatusValue }) => {
+  const handleSaveTask = async (data: TaskModalValue) => {
     if (!projectId || !user) return;
+
     if (editingTask) {
-      await updateTask(projectId, editingTask.id, data);
+      let uploadedAttachments: Attachment[] = [];
+
+      if (data.newFiles.length) {
+        try {
+          uploadedAttachments = await uploadAttachments(`projects/${projectId}/tasks/${editingTask.id}`, data.newFiles);
+        } catch {
+          toast.error('Task salvata, ma alcuni allegati non sono stati caricati');
+        }
+      }
+
+      await updateTask(projectId, editingTask.id, {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        urgency: data.urgency,
+        category: data.category,
+        attachments: [...data.keptAttachments, ...uploadedAttachments],
+        updatedByUid: user.uid,
+      });
+
+      if (data.removedAttachments.length) {
+        try {
+          await deleteStoredAttachments(data.removedAttachments);
+        } catch {
+          toast.error('Task aggiornata, ma alcuni vecchi allegati non sono stati rimossi');
+        }
+      }
     } else {
       const colTasks = tasksForStatus(data.status);
       const order = colTasks.length > 0 ? (colTasks[colTasks.length - 1].order + 1) : 1000;
-      await createTask(projectId, {
-        ...data,
+      const taskId = await createTask(projectId, {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        urgency: data.urgency ?? TaskUrgency.Medium,
+        category: data.category ?? TaskCategory.Feature,
+        attachments: [],
         projectId,
         order,
         createdByUid: user.uid,
+        updatedByUid: user.uid,
       });
+
+      if (data.newFiles.length) {
+        try {
+          const uploadedAttachments = await uploadAttachments(`projects/${projectId}/tasks/${taskId}`, data.newFiles);
+          if (uploadedAttachments.length) {
+            await updateTask(projectId, taskId, { attachments: uploadedAttachments });
+          }
+        } catch {
+          toast.error('Task creata, ma alcuni allegati non sono stati caricati');
+        }
+      }
     }
     setEditingTask(null);
   };
@@ -107,10 +155,16 @@ const Tasks = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (taskId: string) => {
+  const handleDelete = async (task: Task) => {
     if (!projectId) return;
+
+    if (!confirm(`Eliminare "${task.title}"?`)) return;
+
     try {
-      await deleteTask(projectId, taskId);
+      if (task.attachments?.length) {
+        await deleteStoredAttachments(task.attachments);
+      }
+      await deleteTask(projectId, task.id);
     } catch {
       toast.error('Errore nell\'eliminazione della task');
     }

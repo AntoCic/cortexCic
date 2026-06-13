@@ -18,6 +18,12 @@ import type { Note, NoteWrite } from './Note';
 
 const PAGE_SIZE = 10;
 
+function stripUndefinedFields<T extends Record<string, unknown>>(value: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, entryValue]) => entryValue !== undefined),
+  ) as Partial<T>;
+}
+
 function notesCol(uid: string) {
   return collection(db, 'users', uid, 'notes');
 }
@@ -42,12 +48,22 @@ export async function getNotes(
   };
 }
 
+export async function getNoteById(uid: string, noteId: string): Promise<Note | null> {
+  const snap = await getDoc(doc(notesCol(uid), noteId));
+  if (!snap.exists()) {
+    return null;
+  }
+
+  return { id: snap.id, ...(snap.data() as Omit<Note, 'id'>) };
+}
+
 export async function createNote(
   uid: string,
   data: Omit<NoteWrite, 'createdAt' | 'updatedAt'>,
 ): Promise<Note> {
+  const noteData = stripUndefinedFields(data);
   const ref = await addDoc(notesCol(uid), {
-    ...data,
+    ...noteData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -60,7 +76,8 @@ export async function updateNote(
   noteId: string,
   patch: Partial<Omit<NoteWrite, 'createdAt'>>,
 ): Promise<void> {
-  await updateDoc(doc(notesCol(uid), noteId), { ...patch, updatedAt: serverTimestamp() });
+  const cleanPatch = stripUndefinedFields(patch);
+  await updateDoc(doc(notesCol(uid), noteId), { ...cleanPatch, updatedAt: serverTimestamp() });
 }
 
 export async function deleteNote(uid: string, noteId: string): Promise<void> {

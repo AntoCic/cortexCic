@@ -11,14 +11,23 @@ import {
 } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
+import { TaskCategory } from '../../enums/TaskCategory';
 import type { Task, TaskWrite } from './Task';
+import { TaskUrgency } from '../../enums/TaskUrgency';
 
 function tasksCol(projectId: string) {
   return collection(db, 'projects', projectId, 'tasks');
 }
 
 function docToTask(id: string, data: Record<string, unknown>): Task {
-  return { id, ...(data as Omit<Task, 'id'>) };
+  const task = data as Omit<Task, 'id'>;
+  return {
+    id,
+    ...task,
+    urgency: task.urgency ?? TaskUrgency.Medium,
+    category: task.category ?? TaskCategory.Feature,
+    attachments: task.attachments ?? [],
+  };
 }
 
 export async function createTask(projectId: string, data: Omit<TaskWrite, 'createdAt' | 'updatedAt'>): Promise<string> {

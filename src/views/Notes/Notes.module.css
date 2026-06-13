@@ -210,6 +210,10 @@
   text-decoration: underline;
 }
 
+.noteAttachments {
+  margin-top: 0.25rem;
+}
+
 /* Card actions */
 .noteCardActions {
   display: flex;

@@ -1,52 +1,8 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
+import { notifyProjectMembers, PROJECT_NOTIFICATION_TYPES } from './projectNotifications';
 
-const VALID_TYPES = ['info', 'error', 'warning', 'deploy'] as const;
-type NotificationType = (typeof VALID_TYPES)[number];
-
-const TYPE_LABEL: Record<NotificationType, string> = {
-  info: 'Info',
-  error: 'Errore',
-  warning: 'Warning',
-  deploy: 'Deploy',
-};
-
-async function sendPushToProjectMembers(
-  db: admin.firestore.Firestore,
-  projectData: admin.firestore.DocumentData,
-  message: string,
-  type: NotificationType,
-  payloadUrl?: string,
-): Promise<void> {
-  const memberUids: string[] = projectData.memberUids ?? [];
-  if (!memberUids.length) return;
-
-  const tokens: string[] = [];
-  await Promise.all(
-    memberUids.map(async (uid) => {
-      const userSnap = await db.collection('users').doc(uid).get();
-      const fcmTokens: string[] = userSnap.data()?.fcmTokens ?? [];
-      tokens.push(...fcmTokens);
-    }),
-  );
-
-  const validTokens = [...new Set(tokens)].filter(Boolean);
-  if (!validTokens.length) return;
-
-  const fcmMessage: admin.messaging.MulticastMessage = {
-    tokens: validTokens,
-    data: {
-      title: `[${TYPE_LABEL[type]}] cortexCic`,
-      body: message,
-      ...(payloadUrl ? { url: payloadUrl } : {}),
-    },
-  };
-
-  const result = await admin.messaging().sendEachForMulticast(fcmMessage);
-  if (result.failureCount > 0) {
-    console.warn(`FCM: ${result.failureCount} token(s) failed`);
-  }
-}
+type NotificationType = (typeof PROJECT_NOTIFICATION_TYPES)[number];
 
 export const notify = onRequest(async (req, res) => {
   if (req.method !== 'POST') {
@@ -74,8 +30,8 @@ export const notify = onRequest(async (req, res) => {
     return;
   }
 
-  if (!type || !VALID_TYPES.includes(type as NotificationType)) {
-    res.status(400).json({ error: `type must be one of: ${VALID_TYPES.join(', ')}` });
+  if (!type || !PROJECT_NOTIFICATION_TYPES.includes(type as NotificationType)) {
+    res.status(400).json({ error: `type must be one of: ${PROJECT_NOTIFICATION_TYPES.join(', ')}` });
     return;
   }
 
@@ -99,27 +55,15 @@ export const notify = onRequest(async (req, res) => {
       ? (payload as Record<string, unknown>)
       : null;
 
-  const notif = {
+  await notifyProjectMembers({
+    db,
     projectId,
-    type: type as NotificationType,
+    projectData: projectDoc.data(),
     message: message.trim(),
-    payload: safePayload,
+    type: type as NotificationType,
+    payload: safePayload ?? undefined,
     showPush: showPush === true,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    readByUids: [],
-    pinnedByUids: [],
-  };
+  });
 
-  const ref = await db
-    .collection('projects')
-    .doc(projectId)
-    .collection('notifications')
-    .add(notif);
-
-  if (showPush === true) {
-    const payloadUrl = typeof safePayload?.url === 'string' ? safePayload.url : undefined;
-    await sendPushToProjectMembers(db, projectDoc.data(), message.trim(), type as NotificationType, payloadUrl);
-  }
-
-  res.status(200).json({ id: ref.id });
+  res.status(200).json({ ok: true });
 });

@@ -19,10 +19,9 @@ const HomeAuth = () => {
 
   useEffect(() => {
     if (!user) return;
-    console.log('[HomeAuth] subscribing for uid:', user.uid);
     const unsub = subscribeUserProjects(
       user.uid,
-      (p) => { console.log('[HomeAuth] projects received:', p.length, p); dispatch(setProjects(p)); },
+      (p) => { dispatch(setProjects(p)); },
       (err) => { console.error('[subscribeUserProjects] error:', err); dispatch(setProjectsError(err.message)); },
     );
     return unsub;

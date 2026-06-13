@@ -89,7 +89,6 @@
   background: rgba(13, 110, 253, 0.05);
 }
 
-/* Collapsible edit section */
 .editSection {
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.07);
@@ -98,7 +97,18 @@
   margin-bottom: 10px;
 }
 
-/* Tag chips */
+.saveState {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #6c757d;
+}
+
+.saveStateError {
+  color: #dc3545;
+}
+
 .tagList {
   display: flex;
   flex-wrap: wrap;
@@ -133,7 +143,113 @@
   font-weight: 500;
 }
 
-/* Quill editor */
-.quillWrap :global(.ql-editor) {
-  min-height: calc(100vh - 460px);
+.editorWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.toolbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  background: rgba(248, 249, 250, 0.9);
+}
+
+.toolbarBtn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toolbarBtn:hover {
+  background: rgba(13, 110, 253, 0.08);
+  color: #0d6efd;
+}
+
+.toolbarBtnActive {
+  background: rgba(13, 110, 253, 0.12);
+  border-color: rgba(13, 110, 253, 0.18);
+  color: #0d6efd;
+}
+
+.editorSurface {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.editorContent {
+  min-height: calc(100vh - 520px);
+  padding: 1rem 1.1rem 1.2rem;
+  color: #1f2933;
+  line-height: 1.7;
+  outline: none;
+}
+
+.editorContent p {
+  margin: 0 0 0.9rem;
+}
+
+.editorContent h1,
+.editorContent h2,
+.editorContent h3 {
+  margin: 0 0 0.9rem;
+  color: #1a1a2e;
+}
+
+.editorContent ul,
+.editorContent ol {
+  padding-left: 1.25rem;
+}
+
+.editorContent blockquote {
+  border-left: 3px solid rgba(13, 110, 253, 0.24);
+  margin: 1rem 0;
+  padding-left: 0.85rem;
+  color: #495057;
+}
+
+.editorContent pre {
+  background: #1f2937;
+  color: #f8f9fa;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+}
+
+.editorContent :global(.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  color: #adb5bd;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+@media (max-width: 768px) {
+  .infoBar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .editToggleBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .editorContent {
+    min-height: calc(100vh - 580px);
+  }
 }

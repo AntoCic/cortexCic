@@ -1,4 +1,5 @@
 import type { Timestamp } from 'firebase/firestore';
+import type { Attachment } from '../attachments/Attachment';
 import type { NoteTypeValue } from '../../enums/NoteType';
 
 export interface Note {
@@ -8,6 +9,7 @@ export interface Note {
   type?: NoteTypeValue;
   tags?: string[];
   link?: string;
+  attachments?: Attachment[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

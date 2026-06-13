@@ -27,6 +27,15 @@ export const NoteTypeColor: Record<NoteTypeValue, string> = {
   reminder: '#dc3545',
 };
 
+export const NoteTypeIcon: Record<NoteTypeValue, string> = {
+  general: 'notes',
+  copy: 'content_copy',
+  code: 'terminal',
+  link: 'link',
+  idea: 'lightbulb',
+  reminder: 'alarm',
+};
+
 export function getValue(key: string): NoteTypeValue | undefined {
   return NoteType[key as keyof typeof NoteType];
 }

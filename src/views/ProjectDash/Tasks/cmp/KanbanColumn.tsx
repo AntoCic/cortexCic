@@ -19,7 +19,7 @@ interface Props {
   label: string;
   tasks: Task[];
   onEdit: (task: Task) => void;
-  onDelete: (taskId: string) => void;
+  onDelete: (task: Task) => void;
 }
 
 const KanbanColumn = ({ status, label, tasks, onEdit, onDelete }: Props) => {
