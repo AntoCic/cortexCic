@@ -42,7 +42,8 @@ const notesSlice = createSlice({
       state.loadingMore = false;
     },
     addNote(state, action: PayloadAction<Note>) {
-      state.items = [action.payload, ...state.items];
+      state.items = [action.payload, ...state.items.filter((note) => note.id !== action.payload.id)];
+      state.items.sort((a, b) => noteTimeMs(b) - noteTimeMs(a));
     },
     updateNote(state, action: PayloadAction<Partial<Note> & { id: string }>) {
       const idx = state.items.findIndex((n) => n.id === action.payload.id);

@@ -120,6 +120,8 @@ const NoteModal = ({
   const rerunPersistRef = useRef(false);
   const rerunForceRef = useRef(false);
   const activePersistPromiseRef = useRef<Promise<boolean> | null>(null);
+  const previousShowRef = useRef(show);
+  const previousInitialIdRef = useRef<string | null>(initial?.id ?? null);
   const currentDraftRef = useRef<NoteDraft>({
     title: '',
     content: '',
@@ -130,7 +132,25 @@ const NoteModal = ({
   });
 
   useEffect(() => {
+    const wasShowing = previousShowRef.current;
+    previousShowRef.current = show;
+
     if (!show) return;
+
+    const nextInitialId = initial?.id ?? null;
+    const previousInitialId = previousInitialIdRef.current;
+    const isPromotingNewDraftToPersistedNote = !previousInitialId
+      && !!nextInitialId
+      && persistedNoteRef.current?.id === nextInitialId;
+    const noteIdentityChanged = previousInitialId !== nextInitialId;
+    const shouldHydrateFromInitial = !wasShowing || (noteIdentityChanged && !isPromotingNewDraftToPersistedNote);
+
+    previousInitialIdRef.current = nextInitialId;
+
+    if (!shouldHydrateFromInitial) {
+      persistedNoteRef.current = initial ?? persistedNoteRef.current;
+      return;
+    }
 
     setTitle(initial?.title ?? '');
     setContent(initial?.content ?? '');

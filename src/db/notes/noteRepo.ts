@@ -11,8 +11,9 @@ import {
   limit,
   startAfter,
   serverTimestamp,
+  Timestamp,
 } from 'firebase/firestore';
-import type { QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
+import type { QueryDocumentSnapshot } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
 import type { Note, NoteWrite } from './Note';
 
@@ -62,13 +63,26 @@ export async function createNote(
   data: Omit<NoteWrite, 'createdAt' | 'updatedAt'>,
 ): Promise<Note> {
   const noteData = stripUndefinedFields(data);
+  const fallbackTimestamp = Timestamp.now();
   const ref = await addDoc(notesCol(uid), {
     ...noteData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   const snap = await getDoc(ref);
-  return { id: snap.id, ...(snap.data() as Omit<Note, 'id'>) };
+  const persistedData = snap.data() as Partial<Omit<Note, 'id'>> | undefined;
+
+  return {
+    id: ref.id,
+    title: (persistedData?.title ?? noteData.title) as Note['title'],
+    content: (persistedData?.content ?? data.content) as Note['content'],
+    type: (persistedData?.type ?? noteData.type) as Note['type'],
+    tags: (persistedData?.tags ?? noteData.tags) as Note['tags'],
+    link: (persistedData?.link ?? noteData.link) as Note['link'],
+    attachments: (persistedData?.attachments ?? noteData.attachments) as Note['attachments'],
+    createdAt: (persistedData?.createdAt ?? fallbackTimestamp) as Note['createdAt'],
+    updatedAt: (persistedData?.updatedAt ?? fallbackTimestamp) as Note['updatedAt'],
+  };
 }
 
 export async function updateNote(
