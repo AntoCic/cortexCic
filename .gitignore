@@ -25,3 +25,6 @@ dist-ssr
 
 # Superpowers scratch
 .superpowers/
+
+# MCP client config (contains real apiKey secrets)
+.mcp.json
