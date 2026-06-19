@@ -11,3 +11,4 @@ export { onTaskCreated, onTaskMovedToDone } from './tasks/taskNotifications';
 export { mcpGetRecentLogs } from './mcp/mcpGetRecentLogs';
 export { mcpListTasks } from './mcp/mcpListTasks';
 export { mcpCreateTask } from './mcp/mcpCreateTask';
+export { mcpUpdateTaskStatus } from './mcp/mcpUpdateTaskStatus';
