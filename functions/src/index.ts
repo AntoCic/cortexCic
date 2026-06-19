@@ -8,3 +8,4 @@ setGlobalOptions({ region: REGION });
 export { lookupUserByEmail } from './users/lookupUserByEmail';
 export { notify } from './notifications/receiveNotification';
 export { onTaskCreated, onTaskMovedToDone } from './tasks/taskNotifications';
+export { mcpGetRecentLogs } from './mcp/mcpGetRecentLogs';
