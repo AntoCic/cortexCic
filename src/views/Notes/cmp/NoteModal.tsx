@@ -22,6 +22,27 @@ function linkOrigin(url: string): string {
   }
 }
 
+async function copyText(value: string, successMessage: string) {
+  if (!value.trim()) return;
+
+  try {
+    await navigator.clipboard.writeText(value.trim());
+    toast.success(successMessage);
+  } catch {
+    toast.error('Copia non riuscita');
+  }
+}
+
+async function pasteText(onValue: (value: string) => void) {
+  try {
+    const clipboardText = await navigator.clipboard.readText();
+    if (!clipboardText) return;
+    onValue(clipboardText.trim());
+  } catch {
+    toast.error('Incolla non disponibile');
+  }
+}
+
 interface Props {
   show: boolean;
   onClose: () => void;
@@ -396,6 +417,7 @@ const NoteModal = ({
 
   const hasInfo = !!(title || type || link || tags.length || attachments.length);
   const isEditing = !!initial;
+  const isLinkNote = type === NoteType.link;
   const contentEmpty = isNoteContentEmpty(content);
   const editorKey = `${initial?.id ?? 'new'}-${show ? 'open' : 'closed'}`;
 
@@ -531,18 +553,20 @@ const NoteModal = ({
             </div>
           </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-semibold">
-              Link <span className="text-muted fw-normal">(opzionale)</span>
-            </label>
-            <input
-              type="url"
-              className="form-control"
-              value={link}
-              onChange={(event) => setLink(event.target.value)}
-              placeholder="https://…"
-            />
-          </div>
+          {!isLinkNote && (
+            <div className="mb-3">
+              <label className="form-label fw-semibold">
+                Link <span className="text-muted fw-normal">(opzionale)</span>
+              </label>
+              <input
+                type="url"
+                className="form-control"
+                value={link}
+                onChange={(event) => setLink(event.target.value)}
+                placeholder="https://…"
+              />
+            </div>
+          )}
 
           <AttachmentPanel
             attachments={attachments}
@@ -551,6 +575,43 @@ const NoteModal = ({
             uploading={uploading}
             onAddFiles={handleAddFiles}
             onRemove={handleRemoveAttachment}
+          />
+        </div>
+      )}
+
+      {isLinkNote && (
+        <div className={styles.linkBar}>
+          <div className={styles.linkBarHeader}>
+            <span className={styles.linkBarTitle}>
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>link</span>
+              Link nota
+            </span>
+            <div className={styles.linkBarActions}>
+              <button
+                type="button"
+                className={styles.linkActionBtn}
+                onClick={() => { void pasteText((value) => setLink(value)); }}
+                title="Incolla link"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>content_paste</span>
+              </button>
+              <button
+                type="button"
+                className={styles.linkActionBtn}
+                onClick={() => { void copyText(link, 'Link copiato'); }}
+                title="Copia link"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>content_copy</span>
+              </button>
+            </div>
+          </div>
+
+          <input
+            type="url"
+            className="form-control"
+            value={link}
+            onChange={(event) => setLink(event.target.value)}
+            placeholder="https://…"
           />
         </div>
       )}

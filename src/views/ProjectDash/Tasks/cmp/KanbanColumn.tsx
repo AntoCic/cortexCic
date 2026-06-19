@@ -20,9 +20,11 @@ interface Props {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  hiddenCount?: number;
+  onLoadMore?: () => void;
 }
 
-const KanbanColumn = ({ status, label, tasks, onEdit, onDelete }: Props) => {
+const KanbanColumn = ({ status, label, tasks, onEdit, onDelete, hiddenCount = 0, onLoadMore }: Props) => {
   const shouldReduceMotion = useReducedMotion();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -33,7 +35,14 @@ const KanbanColumn = ({ status, label, tasks, onEdit, onDelete }: Props) => {
           <span className={styles.columnDot} style={{ background: DOT_COLORS[status] }} />
           {label}
         </span>
-        <span className={styles.columnCount}>{tasks.length}</span>
+        <div className={styles.columnHeaderActions}>
+          {hiddenCount > 0 && onLoadMore && (
+            <button type="button" className={styles.columnLoadMoreBtn} onClick={onLoadMore}>
+              +{hiddenCount}
+            </button>
+          )}
+          <span className={styles.columnCount}>{tasks.length + hiddenCount}</span>
+        </div>
       </div>
       <div
         ref={setNodeRef}

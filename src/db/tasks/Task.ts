@@ -8,6 +8,9 @@ export interface Task {
   id: string;
   projectId: string;
   title: string;
+  customTitle?: string;
+  projectIdentifier?: string;
+  serialNumber?: number;
   description: string;
   status: TaskStatusValue;
   urgency: TaskUrgencyValue;

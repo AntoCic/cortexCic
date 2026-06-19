@@ -3,6 +3,7 @@ export const NoteType = {
   copy: 'copy',
   code: 'code',
   link: 'link',
+  prompt: 'prompt',
   idea: 'idea',
   reminder: 'reminder',
 } as const;
@@ -14,6 +15,7 @@ export const NoteTypeLabel: Record<NoteTypeValue, string> = {
   copy: 'Copia',
   code: 'Codice',
   link: 'Link',
+  prompt: 'Prompt',
   idea: 'Idea',
   reminder: 'Promemoria',
 };
@@ -23,6 +25,7 @@ export const NoteTypeColor: Record<NoteTypeValue, string> = {
   copy: '#6f42c1',
   code: '#0d6efd',
   link: '#0dcaf0',
+  prompt: '#fd7e14',
   idea: '#ffc107',
   reminder: '#dc3545',
 };
@@ -32,6 +35,7 @@ export const NoteTypeIcon: Record<NoteTypeValue, string> = {
   copy: 'content_copy',
   code: 'terminal',
   link: 'link',
+  prompt: 'chat',
   idea: 'lightbulb',
   reminder: 'alarm',
 };

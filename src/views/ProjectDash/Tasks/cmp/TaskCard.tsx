@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -15,6 +16,7 @@ interface Props {
 
 const TaskCard = ({ task, onEdit, onDelete }: Props) => {
   const shouldReduceMotion = useReducedMotion();
+  const [copied, setCopied] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
@@ -26,6 +28,15 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
   const taskCategory = task.category ?? TaskCategory.Feature;
   const taskUrgency = task.urgency ?? TaskUrgency.Medium;
 
+  const handleCopyDescription = () => {
+    if (!task.description.trim()) return;
+
+    navigator.clipboard.writeText(task.description).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    });
+  };
+
   return (
     <motion.div
       ref={setNodeRef}
@@ -34,30 +45,43 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
       whileHover={!shouldReduceMotion ? { y: -2 } : undefined}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
       className={`${styles.taskCard}${isDragging ? ` ${styles.dragging}` : ''}`}
-      {...attributes}
-      {...listeners}
+      onClick={() => onEdit(task)}
     >
-      <div className={styles.taskMeta}>
-        <span className={styles.taskBadge}>
-          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-            {TASK_CATEGORY_ICONS[taskCategory]}
-          </span>
-          {TASK_CATEGORY_LABELS[taskCategory]}
-        </span>
-        {taskUrgency && (
-          <span
-            className={styles.taskBadge}
-            style={{
-              color: TASK_URGENCY_COLORS[taskUrgency],
-              background: `${TASK_URGENCY_COLORS[taskUrgency]}14`,
-            }}
-          >
+      <div className={styles.taskCardTop}>
+        <div className={styles.taskMeta}>
+          <span className={styles.taskBadge}>
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
-              {TASK_URGENCY_ICONS[taskUrgency]}
+              {TASK_CATEGORY_ICONS[taskCategory]}
             </span>
-            {TASK_URGENCY_LABELS[taskUrgency]}
+            {TASK_CATEGORY_LABELS[taskCategory]}
           </span>
-        )}
+          {taskUrgency && (
+            <span
+              className={styles.taskBadge}
+              style={{
+                color: TASK_URGENCY_COLORS[taskUrgency],
+                background: `${TASK_URGENCY_COLORS[taskUrgency]}14`,
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
+                {TASK_URGENCY_ICONS[taskUrgency]}
+              </span>
+              {TASK_URGENCY_LABELS[taskUrgency]}
+            </span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className={styles.taskDragHandle}
+          onClick={(event) => event.stopPropagation()}
+          title="Trascina task"
+          {...attributes}
+          {...listeners}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>drag_indicator</span>
+          Sposta
+        </button>
       </div>
       <div className={styles.taskTitle}>{task.title}</div>
       {task.description && <div className={styles.taskDesc}>{task.description}</div>}
@@ -67,6 +91,15 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
         </div>
       )}
       <div className={styles.taskActions}>
+        <button
+          className={styles.taskActionBtn}
+          onClick={(e) => { e.stopPropagation(); handleCopyDescription(); }}
+          title="Copia descrizione"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
+            {copied ? 'check' : 'content_copy'}
+          </span>
+        </button>
         <button
           className={styles.taskActionBtn}
           onClick={(e) => { e.stopPropagation(); onEdit(task); }}

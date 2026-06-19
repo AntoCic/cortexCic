@@ -7,6 +7,15 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .pageTitle {
@@ -126,11 +135,17 @@
   gap: 1rem;
   transition: border-color 0.15s, box-shadow 0.15s;
   height: 100%;
+  cursor: pointer;
 }
 
 .noteCard:hover {
   border-color: rgba(108, 99, 255, 0.35);
-  box-shadow: 0 2px 12px rgba(108, 99, 255, 0.08);
+  box-shadow: 0 10px 26px rgba(108, 99, 255, 0.12);
+}
+
+.noteCard:focus-visible {
+  outline: 3px solid rgba(108, 99, 255, 0.18);
+  outline-offset: 3px;
 }
 
 .noteCardTop {

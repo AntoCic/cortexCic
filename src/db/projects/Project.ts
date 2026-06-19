@@ -11,10 +11,12 @@ export interface Project {
   id: string;
   name: string;
   description: string;
+  identifier?: string;
   ownerId: string;
   members: Record<string, ProjectMember>;
   memberUids: string[];
   apiKey: string;
+  taskSerialCounter?: number;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

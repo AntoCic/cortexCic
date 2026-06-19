@@ -1,8 +1,9 @@
-import type { CSSProperties, FormEvent } from 'react';
+import type { CSSProperties, DragEvent, FormEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '../../../../components/Modal/Modal';
 import AttachmentPanel from '../../../../components/AttachmentPanel/AttachmentPanel';
 import { Btn } from '../../../../components/Btn/Btn';
+import { toast } from '../../../../components/toast/toast';
 import { TaskCategory, TASK_CATEGORY_ICONS, TASK_CATEGORY_LABELS } from '../../../../enums/TaskCategory';
 import type { TaskCategoryValue } from '../../../../enums/TaskCategory';
 import { TaskStatus } from '../../../../enums/TaskStatus';
@@ -12,6 +13,7 @@ import type { TaskUrgencyValue } from '../../../../enums/TaskUrgency';
 import type { Attachment } from '../../../../db/attachments/Attachment';
 import { getAttachmentKind } from '../../../../db/attachments/attachmentUtils';
 import type { Task } from '../../../../db/tasks/Task';
+import { formatTaskTitle } from '../../../../db/tasks/taskTitle';
 import styles from './TaskModal.module.css';
 
 interface PendingAttachment extends Attachment {
@@ -35,6 +37,9 @@ interface Props {
   onClose: () => void;
   onSave: (data: TaskModalValue) => Promise<void>;
   initial?: Task | null;
+  projectIdentifier?: string;
+  nextSerialNumber?: number;
+  showOnboardingHint?: boolean;
 }
 
 type OptionCard = {
@@ -84,15 +89,44 @@ function revokePendingAttachments(items: PendingAttachment[]) {
   items.forEach((item) => URL.revokeObjectURL(item.downloadURL));
 }
 
+async function copyFieldValue(value: string, successMessage: string) {
+  if (!value.trim()) return;
+
+  try {
+    await navigator.clipboard.writeText(value);
+    toast.success(successMessage);
+  } catch {
+    toast.error('Copia non riuscita');
+  }
+}
+
+async function pasteIntoField(onPaste: (value: string) => void) {
+  try {
+    const value = await navigator.clipboard.readText();
+    if (!value) return;
+    onPaste(value);
+  } catch {
+    toast.error('Incolla non disponibile');
+  }
+}
+
 interface SelectorProps<T extends string> {
   label: string;
   options: Array<OptionCard & { value: T }>;
   value: T;
   columnsClassName: string;
+  compact?: boolean;
   onChange: (value: T) => void;
 }
 
-const OptionSelector = <T extends string>({ label, options, value, columnsClassName, onChange }: SelectorProps<T>) => (
+const OptionSelector = <T extends string>({
+  label,
+  options,
+  value,
+  columnsClassName,
+  compact = false,
+  onChange,
+}: SelectorProps<T>) => (
   <div className={styles.section}>
     <p className={styles.sectionLabel}>{label}</p>
     <div className={`${styles.optionGrid} ${columnsClassName}`}>
@@ -104,12 +138,12 @@ const OptionSelector = <T extends string>({ label, options, value, columnsClassN
           <button
             key={option.value}
             type="button"
-            className={`${styles.optionCard} ${active ? styles.optionCardActive : ''}`}
+            className={`${styles.optionCard} ${compact ? styles.optionCardCompact : ''} ${active ? styles.optionCardActive : ''}`}
             style={inlineStyle}
             onClick={() => onChange(option.value)}
           >
             <span className={styles.optionIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{option.icon}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: compact ? 18 : 20 }}>{option.icon}</span>
             </span>
             <span className={styles.optionContent}>
               <span className={styles.optionTitle}>{option.label}</span>
@@ -122,7 +156,15 @@ const OptionSelector = <T extends string>({ label, options, value, columnsClassN
   </div>
 );
 
-const TaskModal = ({ show, onClose, onSave, initial }: Props) => {
+const TaskModal = ({
+  show,
+  onClose,
+  onSave,
+  initial,
+  projectIdentifier,
+  nextSerialNumber = 1,
+  showOnboardingHint = false,
+}: Props) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatusValue>(TaskStatus.Todo);
@@ -132,6 +174,7 @@ const TaskModal = ({ show, onClose, onSave, initial }: Props) => {
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [removedAttachments, setRemovedAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dropzoneActive, setDropzoneActive] = useState(false);
   const pendingAttachmentsRef = useRef<PendingAttachment[]>([]);
 
   useEffect(() => {
@@ -144,12 +187,13 @@ const TaskModal = ({ show, onClose, onSave, initial }: Props) => {
     revokePendingAttachments(pendingAttachmentsRef.current);
     setPendingAttachments([]);
     setRemovedAttachments([]);
-    setTitle(initial?.title ?? '');
+    setTitle(initial?.customTitle ?? initial?.title ?? '');
     setDescription(initial?.description ?? '');
     setStatus(initial?.status ?? TaskStatus.Todo);
     setUrgency(initial?.urgency ?? TaskUrgency.Medium);
     setCategory(initial?.category ?? TaskCategory.Feature);
     setAttachments(initial?.attachments ?? []);
+    setDropzoneActive(false);
   }, [show, initial]);
 
   useEffect(() => () => revokePendingAttachments(pendingAttachmentsRef.current), []);
@@ -159,8 +203,36 @@ const TaskModal = ({ show, onClose, onSave, initial }: Props) => {
     [attachments, pendingAttachments],
   );
 
+  const titlePrefix = initial
+    ? (initial.projectIdentifier && initial.serialNumber
+      ? `${initial.projectIdentifier}-${initial.serialNumber}-`
+      : '')
+    : (projectIdentifier ? `${projectIdentifier}-${nextSerialNumber}-` : '');
+
+  const previewTitle = title.trim()
+    ? formatTaskTitle(
+      initial
+        ? initial.projectIdentifier
+        : projectIdentifier,
+      initial
+        ? initial.serialNumber
+        : (projectIdentifier ? nextSerialNumber : undefined),
+      title.trim(),
+    )
+    : '';
+
   const handleAddFiles = async (files: File[]) => {
     setPendingAttachments((prev) => [...prev, ...files.map(createPendingAttachment)]);
+  };
+
+  const handleDropFiles = async (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDropzoneActive(false);
+
+    const files = Array.from(event.dataTransfer.files ?? []);
+    if (!files.length) return;
+
+    await handleAddFiles(files);
   };
 
   const handleRemoveAttachment = async (attachment: Attachment) => {
@@ -224,53 +296,14 @@ const TaskModal = ({ show, onClose, onSave, initial }: Props) => {
       )}
     >
       <form onSubmit={handleSave} className={styles.shell}>
-        <div className={styles.hero}>
-          <h3 className={styles.heroTitle}>Imposta contesto e priorità della task</h3>
-          <p className={styles.heroText}>
-            Stato, urgenza e categoria restano sempre visibili qui sotto, così scegli al volo senza menu nascosti.
-          </p>
-        </div>
-
-        <div className="mb-0">
-          <label className="form-label fw-semibold">Titolo</label>
-          <input
-            type="text"
-            className="form-control"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Cosa c'è da fare?"
-            required
-            autoFocus
-          />
-        </div>
-
-        <div className="mb-0">
-          <label className="form-label fw-semibold">
-            Descrizione <span className="text-muted fw-normal">(opzionale)</span>
-          </label>
-          <textarea
-            className="form-control"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            rows={3}
-          />
-        </div>
-
-        <OptionSelector
-          label="Stato"
-          options={STATUS_OPTIONS}
-          value={status}
-          columnsClassName={styles.optionGrid4}
-          onChange={setStatus}
-        />
-
-        <OptionSelector
-          label="Urgenza"
-          options={URGENCY_OPTIONS}
-          value={urgency}
-          columnsClassName={styles.optionGrid4}
-          onChange={setUrgency}
-        />
+        {showOnboardingHint && (
+          <div className={styles.hero}>
+            <h3 className={styles.heroTitle}>Imposta contesto e priorità della task</h3>
+            <p className={styles.heroText}>
+              Stato, urgenza e categoria restano sempre visibili qui sotto, così scegli al volo senza menu nascosti.
+            </p>
+          </div>
+        )}
 
         <OptionSelector
           label="Categoria"
@@ -280,13 +313,140 @@ const TaskModal = ({ show, onClose, onSave, initial }: Props) => {
           onChange={setCategory}
         />
 
-        <AttachmentPanel
-          attachments={combinedAttachments}
-          title="Allegati task"
-          hint="Puoi caricare immagini, PDF o file generici. Le immagini restano visibili in preview."
-          onAddFiles={handleAddFiles}
-          onRemove={handleRemoveAttachment}
-        />
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldHeader}>
+            <span className={styles.fieldLabel}>Titolo</span>
+            <span className={styles.fieldActions}>
+              <button
+                type="button"
+                className={styles.fieldActionBtn}
+                onClick={() => { void pasteIntoField((value) => setTitle(value)); }}
+                title="Incolla titolo"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>content_paste</span>
+              </button>
+              <button
+                type="button"
+                className={styles.fieldActionBtn}
+                onClick={() => { void copyFieldValue(previewTitle || title, 'Titolo copiato'); }}
+                title="Copia titolo"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>content_copy</span>
+              </button>
+            </span>
+          </label>
+
+          <div className={styles.titleComposer}>
+            {titlePrefix && <span className={styles.titlePrefix}>{titlePrefix}</span>}
+            <input
+              type="text"
+              className={`form-control ${styles.titleInput}`}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder={titlePrefix ? 'titolo task' : 'Cosa c\'è da fare?'}
+              required
+              autoFocus
+            />
+          </div>
+
+          {previewTitle && titlePrefix && (
+            <div className={styles.titlePreview}>{previewTitle}</div>
+          )}
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldHeader}>
+            <span className={styles.fieldLabel}>
+              Descrizione <span className={styles.fieldOptional}>(opzionale)</span>
+            </span>
+            <span className={styles.fieldActions}>
+              <button
+                type="button"
+                className={styles.fieldActionBtn}
+                onClick={() => { void pasteIntoField((value) => setDescription(value)); }}
+                title="Incolla descrizione"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>content_paste</span>
+              </button>
+              <button
+                type="button"
+                className={styles.fieldActionBtn}
+                onClick={() => { void copyFieldValue(description, 'Descrizione copiata'); }}
+                title="Copia descrizione"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>content_copy</span>
+              </button>
+            </span>
+          </label>
+
+          <textarea
+            className={`form-control ${styles.descriptionInput}`}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={9}
+            placeholder="Dettagli, checklist, appunti operativi..."
+          />
+        </div>
+
+        <div className={styles.inlineSelectors}>
+          <OptionSelector
+            label="Stato"
+            options={STATUS_OPTIONS}
+            value={status}
+            compact
+            columnsClassName={styles.optionGrid4}
+            onChange={setStatus}
+          />
+
+          <OptionSelector
+            label="Urgenza"
+            options={URGENCY_OPTIONS}
+            value={urgency}
+            compact
+            columnsClassName={styles.optionGrid4}
+            onChange={setUrgency}
+          />
+        </div>
+
+        <div
+          className={`${styles.dropzoneShell} ${dropzoneActive ? styles.dropzoneShellActive : ''}`}
+          onDragEnter={(event) => {
+            event.preventDefault();
+            setDropzoneActive(true);
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDropzoneActive(true);
+          }}
+          onDragLeave={(event) => {
+            event.preventDefault();
+            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+            setDropzoneActive(false);
+          }}
+          onDrop={(event) => { void handleDropFiles(event); }}
+        >
+          <div className={styles.dropzoneHeader}>
+            <div className={styles.dropzoneIcon}>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                {dropzoneActive ? 'file_download_done' : 'upload_file'}
+              </span>
+            </div>
+            <div>
+              <div className={styles.dropzoneTitle}>Allega file alla task</div>
+              <div className={styles.dropzoneText}>
+                Trascina qui immagini, PDF o file generici, oppure usa il pulsante qui sotto.
+              </div>
+            </div>
+          </div>
+
+          <AttachmentPanel
+            attachments={combinedAttachments}
+            title="Allegati task"
+            hint="Le immagini restano in preview, i PDF si aprono in una nuova tab."
+            onAddFiles={handleAddFiles}
+            onRemove={handleRemoveAttachment}
+          />
+        </div>
       </form>
     </Modal>
   );

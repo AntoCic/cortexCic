@@ -34,9 +34,10 @@ interface Props {
   uid: string;
   onPin: () => void;
   onDownload: () => void;
+  onCopy: () => void;
 }
 
-const NotificationMessage = ({ notif, uid, onPin, onDownload }: Props) => {
+const NotificationMessage = ({ notif, uid, onPin, onDownload, onCopy }: Props) => {
   const [expanded, setExpanded] = useState(false);
   const isRead = notif.readByUids.includes(uid);
   const isPinned = notif.pinnedByUids.includes(uid);
@@ -61,6 +62,13 @@ const NotificationMessage = ({ notif, uid, onPin, onDownload }: Props) => {
         </div>
         <div className={styles.right}>
           <span className={styles.time}>{formatTime(notif.createdAt)}</span>
+          <button
+            className={styles.iconBtn}
+            onClick={onCopy}
+            title="Copia JSON"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 15 }}>content_copy</span>
+          </button>
           <button
             className={styles.iconBtn}
             onClick={onDownload}

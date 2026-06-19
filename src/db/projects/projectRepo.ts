@@ -14,6 +14,7 @@ import {
 import type { Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
 import type { Project, ProjectMember, ProjectWrite } from './Project';
+import { normalizeProjectIdentifierInput } from './projectIdentifier';
 
 const col = collection(db, 'projects');
 
@@ -22,8 +23,11 @@ function docToProject(id: string, data: Record<string, unknown>): Project {
 }
 
 export async function createProject(data: Omit<ProjectWrite, 'createdAt' | 'updatedAt'>): Promise<string> {
+  const normalizedIdentifier = data.identifier ? normalizeProjectIdentifierInput(data.identifier) : undefined;
   const ref = await addDoc(col, {
     ...data,
+    taskSerialCounter: data.taskSerialCounter ?? 0,
+    ...(normalizedIdentifier ? { identifier: normalizedIdentifier } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -31,7 +35,14 @@ export async function createProject(data: Omit<ProjectWrite, 'createdAt' | 'upda
 }
 
 export async function updateProject(id: string, patch: Partial<Omit<ProjectWrite, 'createdAt'>>): Promise<void> {
-  await updateDoc(doc(col, id), { ...patch, updatedAt: serverTimestamp() });
+  const normalizedIdentifier = typeof patch.identifier === 'string'
+    ? normalizeProjectIdentifierInput(patch.identifier)
+    : patch.identifier;
+  await updateDoc(doc(col, id), {
+    ...patch,
+    ...(typeof normalizedIdentifier === 'string' ? { identifier: normalizedIdentifier } : {}),
+    updatedAt: serverTimestamp(),
+  });
 }
 
 export async function deleteProject(id: string): Promise<void> {

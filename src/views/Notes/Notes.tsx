@@ -26,6 +26,8 @@ import type { Attachment } from '../../db/attachments/Attachment';
 import { noteContentToPlainText } from '../../db/notes/noteContent';
 import { staggerContainer, fadeUp } from '../../styles/motionVariants';
 import NoteCard from './cmp/NoteCard';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import CreateLinkNoteModal from './cmp/CreateLinkNoteModal';
 import NoteModal from './cmp/NoteModal';
 import styles from './Notes.module.css';
 
@@ -38,7 +40,10 @@ const Notes = () => {
   const shouldReduceMotion = useReducedMotion();
 
   const [isCreatingNote, setIsCreatingNote] = useState(false);
+  const [isCreatingLinkNote, setIsCreatingLinkNote] = useState(false);
   const [routeNote, setRouteNote] = useState<Note | null>(null);
+  const [loadingRouteNote, setLoadingRouteNote] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<Note | null>(null);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<NoteTypeValue | ''>('');
 
@@ -53,15 +58,22 @@ const Notes = () => {
 
   useEffect(() => {
     if (!noteId) {
+      setRouteNote(null);
+      setLoadingRouteNote(false);
       return;
     }
 
     const existingNote = items.find((item) => item.id === noteId);
-    if (existingNote) return;
+    if (existingNote) {
+      setRouteNote(existingNote);
+      setLoadingRouteNote(false);
+      return;
+    }
 
     if (!user) return;
 
     let cancelled = false;
+    setLoadingRouteNote(true);
 
     getNoteById(user.uid, noteId)
       .then((note) => {
@@ -79,6 +91,10 @@ const Notes = () => {
         if (cancelled) return;
         console.error('[Notes] failed to load note from route', { error, noteId });
         navigate('/notes', { replace: true });
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoadingRouteNote(false);
       });
 
     return () => {
@@ -150,12 +166,17 @@ const Notes = () => {
     navigate(`/notes/${note.id}`);
   };
 
-  const handleDelete = async (note: Note) => {
-    if (!confirm(`Eliminare "${note.title ?? 'questa nota'}"?`)) return;
+  const handleDelete = (note: Note) => {
+    setNoteToDelete(note);
+  };
+
+  const confirmDeleteNote = async () => {
+    if (!noteToDelete) return;
     try {
-      await deleteNoteRecord(note, true);
-    } catch {
+      await deleteNoteRecord(noteToDelete, true);
+    } catch (error) {
       toast.error('Errore nell\'eliminazione');
+      throw error;
     }
   };
 
@@ -175,6 +196,26 @@ const Notes = () => {
 
   const handleCreateNote = () => {
     setIsCreatingNote(true);
+  };
+
+  const handleOpenCreateLinkNote = () => {
+    setIsCreatingLinkNote(true);
+  };
+
+  const handleCreateLinkNote = async (data: { title?: string; link: string }) => {
+    if (!user) throw new Error('Utente non autenticato');
+
+    const note = await createNote(user.uid, {
+      title: data.title,
+      link: data.link,
+      type: NoteType.link,
+      content: '',
+    });
+
+    dispatch(addNote(note));
+    setIsCreatingLinkNote(false);
+    setRouteNote(note);
+    navigate(`/notes/${note.id}`);
   };
 
   const handlePersistedNote = (note: Note) => {
@@ -215,13 +256,23 @@ const Notes = () => {
       <div className="container">
         <div className={styles.header}>
           <h1 className={styles.pageTitle}>Le mie note</h1>
-          <Btn
-            color="primary"
-            onClick={handleCreateNote}
-          >
-            <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>add</span>
-            Nuova nota
-          </Btn>
+          <div className={styles.headerActions}>
+            <Btn
+              version="outline"
+              color="secondary"
+              onClick={handleOpenCreateLinkNote}
+            >
+              <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>link</span>
+              Aggiungi link
+            </Btn>
+            <Btn
+              color="primary"
+              onClick={handleCreateNote}
+            >
+              <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>add</span>
+              Aggiungi nota
+            </Btn>
+          </div>
         </div>
 
         <div className={styles.toolbar}>
@@ -322,6 +373,35 @@ const Notes = () => {
         onPersistedNote={handlePersistedNote}
         initial={modalInitial}
       />
+
+      <CreateLinkNoteModal
+        show={isCreatingLinkNote}
+        onClose={() => setIsCreatingLinkNote(false)}
+        onCreate={handleCreateLinkNote}
+      />
+
+      <ConfirmModal
+        show={!!noteToDelete}
+        onClose={() => setNoteToDelete(null)}
+        onConfirm={confirmDeleteNote}
+        title="Elimina nota"
+        confirmLabel="Elimina"
+        confirmIcon="delete"
+        message={(
+          <>
+            Vuoi eliminare <strong>{noteToDelete?.title?.trim() || 'questa nota'}</strong>?
+            <br />
+            L’azione è irreversibile.
+          </>
+        )}
+      />
+
+      {noteId && loadingRouteNote && !activeRouteNote && (
+        <div className="position-fixed top-50 start-50 translate-middle bg-white border rounded-4 shadow-sm px-4 py-3 d-flex align-items-center gap-3" style={{ zIndex: 1056 }}>
+          <div className="spinner-border text-primary" style={{ width: '1.25rem', height: '1.25rem' }} />
+          <span className="text-muted small">Caricamento nota…</span>
+        </div>
+      )}
     </div>
   );
 };

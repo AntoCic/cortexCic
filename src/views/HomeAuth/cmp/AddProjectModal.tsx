@@ -2,6 +2,11 @@ import { useState } from 'react';
 import { Modal } from '../../../components/Modal/Modal';
 import { Btn } from '../../../components/Btn/Btn';
 import { createProject } from '../../../db/projects/projectRepo';
+import {
+  getProjectIdentifierError,
+  normalizeProjectIdentifierInput,
+  suggestProjectIdentifier,
+} from '../../../db/projects/projectIdentifier';
 import { useAuth } from '../../../db/auth/useAuth';
 import { MemberRole } from '../../../enums/MemberRole';
 import { toast } from '../../../components/toast/toast';
@@ -17,16 +22,35 @@ const AddProjectModal = ({ show, onClose }: Props) => {
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [identifier, setIdentifier] = useState('');
+  const [identifierTouched, setIdentifierTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const suggestedIdentifier = suggestProjectIdentifier(name);
+
+  const identifierError = getProjectIdentifierError(identifier);
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+
+    if (!identifierTouched || identifier === suggestedIdentifier) {
+      setIdentifier(suggestProjectIdentifier(value));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !name.trim()) return;
+    if (identifierError) {
+      toast.error(identifierError);
+      return;
+    }
     setLoading(true);
     try {
       await createProject({
         name: name.trim(),
         description: description.trim(),
+        identifier,
         ownerId: user.uid,
         members: {
           [user.uid]: {
@@ -41,6 +65,8 @@ const AddProjectModal = ({ show, onClose }: Props) => {
       toast.success('Progetto creato');
       setName('');
       setDescription('');
+      setIdentifier('');
+      setIdentifierTouched(false);
       onClose();
     } catch (err) {
       console.error('[createProject] error:', err);
@@ -74,11 +100,29 @@ const AddProjectModal = ({ show, onClose }: Props) => {
             type="text"
             className="form-control"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             placeholder="es. My App"
             required
             autoFocus
           />
+        </div>
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Identificativo progetto</label>
+          <input
+            type="text"
+            className="form-control text-uppercase"
+            value={identifier}
+            onChange={(e) => {
+              setIdentifierTouched(true);
+              setIdentifier(normalizeProjectIdentifierInput(e.target.value));
+            }}
+            placeholder={suggestedIdentifier}
+            required
+            maxLength={4}
+          />
+          <div className="form-text">
+            2-4 lettere maiuscole. Suggerito: <strong>{suggestedIdentifier}</strong>
+          </div>
         </div>
         <div className="mb-1">
           <label className="form-label fw-semibold">Descrizione <span className="text-muted fw-normal">(opzionale)</span></label>

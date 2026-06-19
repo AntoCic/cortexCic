@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
+import Underline from '@tiptap/extension-underline';
 import { Markdown } from '@tiptap/markdown';
 import styles from './NoteModal.module.css';
 
@@ -38,12 +40,13 @@ const NoteEditor = ({ initialValue, onChange }: Props) => {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
-        link: {
-          openOnClick: false,
-          autolink: true,
-          defaultProtocol: 'https',
-        },
       }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        defaultProtocol: 'https',
+      }),
+      Underline,
       Placeholder.configure({
         placeholder: 'Scrivi in Markdown o testo normale…',
       }),
@@ -63,6 +66,19 @@ const NoteEditor = ({ initialValue, onChange }: Props) => {
     if (!editor) return;
     editor.commands.focus('end');
   }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const currentMarkdown = editor.getMarkdown();
+    if (currentMarkdown === initialValue) {
+      return;
+    }
+
+    editor.commands.setContent(initialValue, {
+      contentType: 'markdown',
+    });
+  }, [editor, initialValue]);
 
   const toggleLink = () => {
     if (!editor) return;

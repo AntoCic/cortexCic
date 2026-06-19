@@ -1,19 +1,20 @@
 import {
   collection,
   doc,
-  addDoc,
   updateDoc,
   deleteDoc,
   onSnapshot,
   query,
   orderBy,
   serverTimestamp,
+  runTransaction,
 } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
 import { TaskCategory } from '../../enums/TaskCategory';
 import type { Task, TaskWrite } from './Task';
 import { TaskUrgency } from '../../enums/TaskUrgency';
+import { formatTaskTitle } from './taskTitle';
 
 function tasksCol(projectId: string) {
   return collection(db, 'projects', projectId, 'tasks');
@@ -21,9 +22,12 @@ function tasksCol(projectId: string) {
 
 function docToTask(id: string, data: Record<string, unknown>): Task {
   const task = data as Omit<Task, 'id'>;
+  const customTitle = task.customTitle ?? task.title;
+
   return {
     id,
     ...task,
+    customTitle,
     urgency: task.urgency ?? TaskUrgency.Medium,
     category: task.category ?? TaskCategory.Feature,
     attachments: task.attachments ?? [],
@@ -31,12 +35,44 @@ function docToTask(id: string, data: Record<string, unknown>): Task {
 }
 
 export async function createTask(projectId: string, data: Omit<TaskWrite, 'createdAt' | 'updatedAt'>): Promise<string> {
-  const ref = await addDoc(tasksCol(projectId), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  return runTransaction(db, async (transaction) => {
+    const projectRef = doc(db, 'projects', projectId);
+    const projectSnap = await transaction.get(projectRef);
+
+    if (!projectSnap.exists()) {
+      throw new Error('Progetto non trovato');
+    }
+
+    const projectData = projectSnap.data() as {
+      identifier?: string;
+      taskSerialCounter?: number;
+    };
+    const projectIdentifier = projectData.identifier;
+
+    if (!projectIdentifier) {
+      throw new Error('Configura prima l’identificativo progetto');
+    }
+
+    const nextSerialNumber = (projectData.taskSerialCounter ?? 0) + 1;
+    const customTitle = (data.customTitle ?? data.title).trim();
+    const taskRef = doc(tasksCol(projectId));
+
+    transaction.set(taskRef, {
+      ...data,
+      title: formatTaskTitle(projectIdentifier, nextSerialNumber, customTitle),
+      customTitle,
+      projectIdentifier,
+      serialNumber: nextSerialNumber,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    transaction.update(projectRef, {
+      taskSerialCounter: nextSerialNumber,
+      updatedAt: serverTimestamp(),
+    });
+
+    return taskRef.id;
   });
-  return ref.id;
 }
 
 export async function updateTask(projectId: string, taskId: string, patch: Partial<Omit<TaskWrite, 'createdAt'>>): Promise<void> {

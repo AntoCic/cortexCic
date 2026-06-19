@@ -15,6 +15,7 @@ import {
 import type { Notification, NotificationType } from '../../../db/notifications/Notification';
 import NotificationMessage from './cmp/NotificationMessage';
 import NotificationFilters from './cmp/NotificationFilters';
+import { toast } from '../../../components/toast/toast';
 import styles from './NotificationsPage.module.css';
 
 const EXPORT_COUNTS = [3, 5, 10, 20, 30, 50, 100] as const;
@@ -161,6 +162,15 @@ const NotificationsPage = () => {
     downloadJson(serializeNotif(notif), `notif-${notif.id}-${notif.type}.json`);
   };
 
+  const handleCopySingle = async (notif: Notification) => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(serializeNotif(notif), null, 2));
+      toast.success('JSON copiato');
+    } catch {
+      toast.error('Copia non riuscita');
+    }
+  };
+
   if (!project) return null;
 
   return (
@@ -186,6 +196,7 @@ const NotificationsPage = () => {
                 uid={uid}
                 onPin={() => handleTogglePin(n.id, n.pinnedByUids.includes(uid))}
                 onDownload={() => handleDownloadSingle(n)}
+              onCopy={() => handleCopySingle(n)}
               />
             ))}
           </div>
@@ -220,6 +231,7 @@ const NotificationsPage = () => {
               uid={uid}
               onPin={() => handleTogglePin(n.id, n.pinnedByUids.includes(uid))}
               onDownload={() => handleDownloadSingle(n)}
+              onCopy={() => handleCopySingle(n)}
             />
           ))}
         </div>

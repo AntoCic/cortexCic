@@ -3,6 +3,11 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../../components/firebase/firebase';
 import { useAppSelector } from '../../../store';
 import { updateProject, addMember, removeMember, regenerateApiKey } from '../../../db/projects/projectRepo';
+import {
+  getProjectIdentifierError,
+  normalizeProjectIdentifierInput,
+  suggestProjectIdentifier,
+} from '../../../db/projects/projectIdentifier';
 import { MemberRole } from '../../../enums/MemberRole';
 import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
@@ -10,6 +15,7 @@ import type { Timestamp } from 'firebase/firestore';
 import { Timestamp as FsTimestamp } from 'firebase/firestore';
 import { HUB_LOG_URL } from '../../../firebase-config';
 import DeleteProjectModal from './cmp/DeleteProjectModal';
+import ConfirmModal from '../../../components/ConfirmModal/ConfirmModal';
 import styles from './Settings.module.css';
 
 const Settings = () => {
@@ -18,19 +24,22 @@ const Settings = () => {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [savingInfo, setSavingInfo] = useState(false);
 
   const [addEmail, setAddEmail] = useState('');
   const [addingMember, setAddingMember] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [showRegenConfirm, setShowRegenConfirm] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
   useEffect(() => {
     if (project) {
       setName(project.name);
       setDescription(project.description);
+      setIdentifier(project.identifier ?? suggestProjectIdentifier(project.name));
     }
-  }, [project?.id]);
+  }, [project]);
 
   if (!project) {
     return (
@@ -46,9 +55,18 @@ const Settings = () => {
 
   const handleSaveInfo = async (e: React.FormEvent) => {
     e.preventDefault();
+    const identifierError = getProjectIdentifierError(identifier);
+    if (identifierError) {
+      toast.error(identifierError);
+      return;
+    }
     setSavingInfo(true);
     try {
-      await updateProject(project.id, { name: name.trim(), description: description.trim() });
+      await updateProject(project.id, {
+        name: name.trim(),
+        description: description.trim(),
+        identifier,
+      });
       toast.success('Progetto aggiornato');
     } catch {
       toast.error('Errore nel salvataggio');
@@ -111,13 +129,13 @@ Do not use \`console.error\` for production errors — route them through \`hubL
   };
 
   const handleRegenerateApiKey = async () => {
-    if (!confirm('Rigenerare la API key? La chiave precedente smetterà di funzionare immediatamente.')) return;
     setRegenerating(true);
     try {
       await regenerateApiKey(project.id);
       toast.success('API key rigenerata');
-    } catch {
+    } catch (error) {
       toast.error('Errore nella rigenerazione');
+      throw error;
     } finally {
       setRegenerating(false);
     }
@@ -178,9 +196,30 @@ Do not use \`console.error\` for production errors — route them through \`hubL
                 type="text"
                 className="form-control"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  const nextName = e.target.value;
+                  setName(nextName);
+
+                  if (!project?.identifier || identifier === suggestProjectIdentifier(name)) {
+                    setIdentifier(suggestProjectIdentifier(nextName));
+                  }
+                }}
                 required
               />
+            </div>
+            <div className="mb-3">
+              <label className="form-label fw-semibold">Identificativo progetto</label>
+              <input
+                type="text"
+                className="form-control text-uppercase"
+                value={identifier}
+                onChange={(e) => setIdentifier(normalizeProjectIdentifierInput(e.target.value))}
+                maxLength={4}
+                required
+              />
+              <div className="form-text">
+                2-4 lettere maiuscole usate nei task, ad esempio <strong>{suggestProjectIdentifier(name)}</strong>.
+              </div>
             </div>
             <div className="mb-3">
               <label className="form-label fw-semibold">Descrizione</label>
@@ -214,7 +253,7 @@ Do not use \`console.error\` for production errors — route them through \`hubL
               <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>content_copy</span>
               {' '}Copia
             </Btn>
-            <Btn version="outline" color="danger" loading={regenerating} onClick={handleRegenerateApiKey}>
+            <Btn version="outline" color="danger" loading={regenerating} onClick={() => setShowRegenConfirm(true)}>
               <span className="material-symbols-outlined" style={{ fontSize: 16, verticalAlign: 'text-bottom' }}>autorenew</span>
               {' '}Rigenera
             </Btn>
@@ -315,6 +354,24 @@ Do not use \`console.error\` for production errors — route them through \`hubL
         onClose={() => setShowDelete(false)}
         projectId={project.id}
         projectName={project.name}
+      />
+
+      <ConfirmModal
+        show={showRegenConfirm}
+        onClose={() => setShowRegenConfirm(false)}
+        onConfirm={handleRegenerateApiKey}
+        title="Rigenera API key"
+        confirmLabel="Rigenera"
+        confirmColor="danger"
+        confirmIcon="autorenew"
+        message={(
+          <>
+            Vuoi rigenerare la API key di questo progetto?
+            <br />
+            La chiave precedente <strong>smetterà di funzionare immediatamente</strong> e i progetti
+            esterni andranno aggiornati con la nuova chiave.
+          </>
+        )}
       />
     </div>
   );

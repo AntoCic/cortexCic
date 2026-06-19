@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   DndContext,
   PointerSensor,
@@ -21,9 +21,11 @@ import { TaskUrgency } from '../../../enums/TaskUrgency';
 import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
 import type { Task } from '../../../db/tasks/Task';
+import { formatTaskTitle } from '../../../db/tasks/taskTitle';
 import KanbanColumn from './cmp/KanbanColumn';
 import TaskCard from './cmp/TaskCard';
 import TaskModal, { type TaskModalValue } from './cmp/TaskModal';
+import ConfirmModal from '../../../components/ConfirmModal/ConfirmModal';
 import styles from './Tasks.module.css';
 
 const COLUMNS: TaskStatusValue[] = [TaskStatus.Todo, TaskStatus.InProgress, TaskStatus.Done, TaskStatus.Block];
@@ -39,13 +41,17 @@ function computeOrder(tasksInCol: Task[], overIndex: number): number {
 
 const Tasks = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { user } = useAuth();
   const { items: tasks, loading } = useAppSelector((s) => s.tasks);
+  const currentProject = useAppSelector((s) => s.projects.currentProject);
 
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [doneVisibleCount, setDoneVisibleCount] = useState(4);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -57,6 +63,20 @@ const Tasks = () => {
 
   const tasksForStatus = (status: TaskStatusValue) =>
     tasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order);
+
+  const allDoneTasks = tasksForStatus(TaskStatus.Done);
+  const hiddenDoneCount = Math.max(allDoneTasks.length - doneVisibleCount, 0);
+  const visibleDoneTasks = hiddenDoneCount > 0
+    ? allDoneTasks.slice(-doneVisibleCount)
+    : allDoneTasks;
+  const projectIdentifier = currentProject?.identifier;
+  const nextTaskNumber = (currentProject?.taskSerialCounter ?? 0) + 1;
+
+  useEffect(() => {
+    if (allDoneTasks.length <= 4 && doneVisibleCount !== 4) {
+      setDoneVisibleCount(4);
+    }
+  }, [allDoneTasks.length, doneVisibleCount]);
 
   const handleDragStart = (event: DragStartEvent) => {
     const task = tasks.find((t) => t.id === event.active.id);
@@ -104,7 +124,10 @@ const Tasks = () => {
       }
 
       await updateTask(projectId, editingTask.id, {
-        title: data.title,
+        title: editingTask.projectIdentifier && editingTask.serialNumber
+          ? formatTaskTitle(editingTask.projectIdentifier, editingTask.serialNumber, data.title)
+          : data.title,
+        customTitle: data.title,
         description: data.description,
         status: data.status,
         urgency: data.urgency,
@@ -121,10 +144,19 @@ const Tasks = () => {
         }
       }
     } else {
+      if (!projectIdentifier) {
+        toast.error('Aggiungi prima il seriale progetto', {
+          subtitle: 'Apri Impostazioni e inserisci 2-4 lettere maiuscole prima di creare nuove task.',
+        });
+        navigate(`/project/${projectId}/settings`);
+        return;
+      }
+
       const colTasks = tasksForStatus(data.status);
       const order = colTasks.length > 0 ? (colTasks[colTasks.length - 1].order + 1) : 1000;
       const taskId = await createTask(projectId, {
         title: data.title,
+        customTitle: data.title,
         description: data.description,
         status: data.status,
         urgency: data.urgency ?? TaskUrgency.Medium,
@@ -155,22 +187,33 @@ const Tasks = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (task: Task) => {
-    if (!projectId) return;
+  const handleDelete = (task: Task) => {
+    setTaskToDelete(task);
+  };
 
-    if (!confirm(`Eliminare "${task.title}"?`)) return;
+  const confirmDeleteTask = async () => {
+    if (!projectId || !taskToDelete) return;
 
     try {
-      if (task.attachments?.length) {
-        await deleteStoredAttachments(task.attachments);
+      if (taskToDelete.attachments?.length) {
+        await deleteStoredAttachments(taskToDelete.attachments);
       }
-      await deleteTask(projectId, task.id);
-    } catch {
+      await deleteTask(projectId, taskToDelete.id);
+    } catch (error) {
       toast.error('Errore nell\'eliminazione della task');
+      throw error;
     }
   };
 
   const openCreate = () => {
+    if (!projectIdentifier) {
+      toast.error('Manca l’identificativo progetto', {
+        subtitle: 'Apri Impostazioni, aggiungi 2-4 lettere maiuscole e poi potrai creare nuove task.',
+      });
+      navigate(`/project/${projectId}/settings`);
+      return;
+    }
+
     setEditingTask(null);
     setShowModal(true);
   };
@@ -191,6 +234,19 @@ const Tasks = () => {
     <div className={styles.root}>
       <div className="container-fluid px-4">
         <div className={styles.toolbar}>
+          {!projectIdentifier && (
+            <div className={styles.identifierAlert}>
+              <div>
+                <div className={styles.identifierAlertTitle}>Serve il seriale progetto prima di creare nuove task</div>
+                <div className={styles.identifierAlertText}>
+                  Vai in impostazioni e aggiungi un identificativo di 2-4 lettere maiuscole.
+                </div>
+              </div>
+              <Btn version="outline" color="secondary" onClick={() => navigate(`/project/${projectId}/settings`)}>
+                Impostazioni
+              </Btn>
+            </div>
+          )}
           <Btn color="primary" onClick={openCreate}>
             <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>add</span>
             Nuova task
@@ -204,9 +260,13 @@ const Tasks = () => {
                 key={col}
                 status={col}
                 label={TASK_STATUS_LABELS[col]}
-                tasks={tasksForStatus(col)}
+                tasks={col === TaskStatus.Done ? visibleDoneTasks : tasksForStatus(col)}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                hiddenCount={col === TaskStatus.Done ? hiddenDoneCount : 0}
+                onLoadMore={col === TaskStatus.Done && hiddenDoneCount > 0
+                  ? () => setDoneVisibleCount((prev) => prev + 4)
+                  : undefined}
               />
             ))}
           </div>
@@ -224,6 +284,25 @@ const Tasks = () => {
         onClose={() => { setShowModal(false); setEditingTask(null); }}
         onSave={handleSaveTask}
         initial={editingTask}
+        projectIdentifier={projectIdentifier}
+        nextSerialNumber={nextTaskNumber}
+        showOnboardingHint={!editingTask && tasks.length < 3}
+      />
+
+      <ConfirmModal
+        show={!!taskToDelete}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={confirmDeleteTask}
+        title="Elimina task"
+        confirmLabel="Elimina"
+        confirmIcon="delete"
+        message={(
+          <>
+            Vuoi eliminare <strong>{taskToDelete?.title || 'questa task'}</strong>?
+            <br />
+            L’azione è irreversibile.
+          </>
+        )}
       />
     </div>
   );

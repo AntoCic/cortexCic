@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEvent as ReactMouseEvent } from 'react';
 import AttachmentPanel from '../../../components/AttachmentPanel/AttachmentPanel';
 import { noteContentToPlainText } from '../../../db/notes/noteContent';
 import { NoteTypeLabel, NoteTypeColor } from '../../../enums/NoteType';
@@ -20,6 +20,10 @@ function formatDate(ts: Note['updatedAt']): string {
 const NoteCard = ({ note, onEdit, onDelete }: Props) => {
   const [copied, setCopied] = useState(false);
 
+  const stopCardClick = (event: ReactMouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+  };
+
   const handleCopy = () => {
     const text = noteContentToPlainText(note.content);
     navigator.clipboard.writeText(text).then(() => {
@@ -32,7 +36,18 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
   const preview = plainContent.slice(0, 160).trim();
 
   return (
-    <div className={styles.noteCard}>
+    <article
+      className={styles.noteCard}
+      onClick={() => onEdit(note)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onEdit(note);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >
       <div className={styles.noteCardTop}>
         <div className={styles.noteCardMeta}>
           {note.type && (
@@ -62,6 +77,7 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
           target="_blank"
           rel="noopener noreferrer"
           className={styles.noteLink}
+          onClick={stopCardClick}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>link</span>
           {note.link}
@@ -75,21 +91,17 @@ const NoteCard = ({ note, onEdit, onDelete }: Props) => {
       )}
 
       <div className={styles.noteCardActions}>
-        <button className={styles.actionBtn} onClick={handleCopy} title="Copia contenuto">
+        <button className={styles.actionBtn} onClick={(event) => { stopCardClick(event); handleCopy(); }} title="Copia contenuto">
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
             {copied ? 'check' : 'content_copy'}
           </span>
           {copied ? 'Copiato' : 'Copia'}
         </button>
-        <button className={styles.actionBtn} onClick={() => onEdit(note)} title="Modifica">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>edit</span>
-          Modifica
-        </button>
-        <button className={`${styles.actionBtn} ${styles.actionBtnDanger}`} onClick={() => onDelete(note)} title="Elimina">
+        <button className={`${styles.actionBtn} ${styles.actionBtnDanger}`} onClick={(event) => { stopCardClick(event); onDelete(note); }} title="Elimina">
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>delete</span>
         </button>
       </div>
-    </div>
+    </article>
   );
 };
 
