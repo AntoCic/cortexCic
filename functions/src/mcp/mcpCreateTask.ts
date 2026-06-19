@@ -58,12 +58,12 @@ export const mcpCreateTask = onRequest(async (req, res) => {
       const customTitle = title.trim();
 
       const tasksCol = projectRef.collection('tasks');
-      const lastInColumnSnap = await transaction.get(
-        tasksCol.where('status', '==', resolvedStatus).orderBy('order', 'desc').limit(1),
+      const columnTasksSnap = await transaction.get(tasksCol.where('status', '==', resolvedStatus));
+      const maxOrder = columnTasksSnap.docs.reduce(
+        (max, d) => Math.max(max, (d.data().order as number | undefined) ?? 0),
+        0,
       );
-      const order = lastInColumnSnap.empty
-        ? 1000
-        : (lastInColumnSnap.docs[0].data().order as number) + 1;
+      const order = columnTasksSnap.empty ? 1000 : maxOrder + 1;
 
       const taskRef = tasksCol.doc();
       transaction.set(taskRef, {
