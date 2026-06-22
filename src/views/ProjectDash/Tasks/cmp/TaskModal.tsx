@@ -1,5 +1,5 @@
 import type { CSSProperties, DragEvent, FormEvent } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal } from '../../../../components/Modal/Modal';
 import AttachmentPanel from '../../../../components/AttachmentPanel/AttachmentPanel';
 import { Btn } from '../../../../components/Btn/Btn';
@@ -35,7 +35,7 @@ export interface TaskModalValue {
 interface Props {
   show: boolean;
   onClose: () => void;
-  onSave: (data: TaskModalValue) => Promise<void>;
+  onSave: (data: TaskModalValue) => Promise<{ attachments: Attachment[] } | void>;
   initial?: Task | null;
   projectIdentifier?: string;
   nextSerialNumber?: number;
@@ -88,6 +88,21 @@ function createPendingAttachment(file: File): PendingAttachment {
 function revokePendingAttachments(items: PendingAttachment[]) {
   items.forEach((item) => URL.revokeObjectURL(item.downloadURL));
 }
+
+function valueSignature(value: TaskModalValue): string {
+  return JSON.stringify({
+    title: value.title,
+    description: value.description,
+    status: value.status,
+    urgency: value.urgency,
+    category: value.category,
+    kept: value.keptAttachments.map((a) => a.id),
+    removed: value.removedAttachments.map((a) => a.id),
+    files: value.newFiles.map((f) => `${f.name}:${f.size}`),
+  });
+}
+
+type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 
 async function copyFieldValue(value: string, successMessage: string) {
   if (!value.trim()) return;
@@ -175,7 +190,14 @@ const TaskModal = ({
   const [removedAttachments, setRemovedAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(false);
   const [dropzoneActive, setDropzoneActive] = useState(false);
+  const [saveState, setSaveState] = useState<SaveState>('idle');
   const pendingAttachmentsRef = useRef<PendingAttachment[]>([]);
+  const lastSavedSigRef = useRef('');
+  const savingRef = useRef(false);
+  const rerunRef = useRef(false);
+  const valueRef = useRef<TaskModalValue | null>(null);
+
+  const isEditing = !!initial;
 
   useEffect(() => {
     pendingAttachmentsRef.current = pendingAttachments;
@@ -194,6 +216,19 @@ const TaskModal = ({
     setCategory(initial?.category ?? TaskCategory.Feature);
     setAttachments(initial?.attachments ?? []);
     setDropzoneActive(false);
+    setSaveState('idle');
+    savingRef.current = false;
+    rerunRef.current = false;
+    lastSavedSigRef.current = valueSignature({
+      title: (initial?.customTitle ?? initial?.title ?? '').trim(),
+      description: (initial?.description ?? '').trim(),
+      status: initial?.status ?? TaskStatus.Todo,
+      urgency: initial?.urgency ?? TaskUrgency.Medium,
+      category: initial?.category ?? TaskCategory.Feature,
+      keptAttachments: initial?.attachments ?? [],
+      removedAttachments: [],
+      newFiles: [],
+    });
   }, [show, initial]);
 
   useEffect(() => () => revokePendingAttachments(pendingAttachmentsRef.current), []);
@@ -202,6 +237,76 @@ const TaskModal = ({
     () => [...attachments, ...pendingAttachments],
     [attachments, pendingAttachments],
   );
+
+  const currentValue = useMemo<TaskModalValue>(() => ({
+    title: title.trim(),
+    description: description.trim(),
+    status,
+    urgency,
+    category,
+    keptAttachments: attachments,
+    removedAttachments,
+    newFiles: pendingAttachments.map((item) => item.file),
+  }), [title, description, status, urgency, category, attachments, removedAttachments, pendingAttachments]);
+
+  useEffect(() => {
+    valueRef.current = currentValue;
+  }, [currentValue]);
+
+  const runAutosave = useCallback(async () => {
+    const value = valueRef.current;
+    if (!value || !value.title) return;
+
+    if (savingRef.current) {
+      rerunRef.current = true;
+      return;
+    }
+
+    const signature = valueSignature(value);
+    if (signature === lastSavedSigRef.current) return;
+
+    savingRef.current = true;
+    setSaveState('saving');
+    try {
+      const result = await onSave(value);
+      if (result?.attachments) {
+        revokePendingAttachments(pendingAttachmentsRef.current);
+        setPendingAttachments([]);
+        setRemovedAttachments([]);
+        setAttachments(result.attachments);
+        lastSavedSigRef.current = valueSignature({
+          ...value,
+          keptAttachments: result.attachments,
+          removedAttachments: [],
+          newFiles: [],
+        });
+      } else {
+        lastSavedSigRef.current = signature;
+      }
+      setSaveState('saved');
+    } catch (error) {
+      console.error('[TaskModal] autosave failed', { error, taskId: initial?.id ?? null });
+      setSaveState('error');
+      toast.error('Salvataggio task non riuscito');
+    } finally {
+      savingRef.current = false;
+      if (rerunRef.current) {
+        rerunRef.current = false;
+        void runAutosave();
+      }
+    }
+  }, [initial, onSave]);
+
+  // Autosave on edit: debounce field changes (creation keeps the explicit Salva button).
+  useEffect(() => {
+    if (!show || !isEditing) return;
+    if (!currentValue.title) return;
+    if (valueSignature(currentValue) === lastSavedSigRef.current) return;
+
+    setSaveState((prev) => (prev === 'saving' ? prev : 'dirty'));
+    const timer = window.setTimeout(() => { void runAutosave(); }, 600);
+    return () => window.clearTimeout(timer);
+  }, [show, isEditing, currentValue, runAutosave]);
 
   const titlePrefix = initial
     ? (initial.projectIdentifier && initial.serialNumber
@@ -276,9 +381,25 @@ const TaskModal = ({
   };
 
   const handleRequestClose = () => {
+    if (isEditing) {
+      void (async () => {
+        await runAutosave();
+        revokePendingAttachments(pendingAttachmentsRef.current);
+        onClose();
+      })();
+      return;
+    }
     revokePendingAttachments(pendingAttachmentsRef.current);
     onClose();
   };
+
+  const saveStatusLabel = saveState === 'saving' ? 'Salvataggio automatico…'
+    : saveState === 'saved' ? 'Tutto salvato'
+    : saveState === 'error' ? 'Errore di salvataggio'
+    : saveState === 'dirty' ? 'Modifiche in attesa…'
+    : 'Autosave attivo';
+
+  const saveStatusIcon = saveState === 'error' ? 'error' : saveState === 'saved' ? 'check_circle' : 'sync';
 
   return (
     <Modal
@@ -289,13 +410,31 @@ const TaskModal = ({
       centered
       scrollable
       footer={(
-        <>
-          <Btn version="outline" color="secondary" onClick={handleRequestClose} disabled={loading}>Annulla</Btn>
-          <Btn color="primary" onClick={handleSave as never} loading={loading}>Salva</Btn>
-        </>
+        <div className="d-flex w-100 align-items-center justify-content-between gap-3">
+          {isEditing ? (
+            <span
+              className="d-inline-flex align-items-center gap-1 small"
+              style={{ color: saveState === 'error' ? '#e03131' : '#6c757d' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{saveStatusIcon}</span>
+              {saveStatusLabel}
+            </span>
+          ) : <span />}
+          <div className="d-flex gap-2">
+            <Btn version="outline" color="secondary" onClick={handleRequestClose} disabled={loading}>
+              {isEditing ? 'Chiudi' : 'Annulla'}
+            </Btn>
+            {!isEditing && (
+              <Btn color="primary" onClick={handleSave as never} loading={loading}>Salva</Btn>
+            )}
+          </div>
+        </div>
       )}
     >
-      <form onSubmit={handleSave} className={styles.shell}>
+      <form
+        onSubmit={isEditing ? (event) => { event.preventDefault(); void runAutosave(); } : handleSave}
+        className={styles.shell}
+      >
         {showOnboardingHint && (
           <div className={styles.hero}>
             <h3 className={styles.heroTitle}>Imposta contesto e priorità della task</h3>

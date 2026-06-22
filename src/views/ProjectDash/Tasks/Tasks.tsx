@@ -109,7 +109,7 @@ const Tasks = () => {
     });
   };
 
-  const handleSaveTask = async (data: TaskModalValue) => {
+  const handleSaveTask = async (data: TaskModalValue): Promise<{ attachments: Attachment[] } | void> => {
     if (!projectId || !user) return;
 
     if (editingTask) {
@@ -123,6 +123,8 @@ const Tasks = () => {
         }
       }
 
+      const attachments = [...data.keptAttachments, ...uploadedAttachments];
+
       await updateTask(projectId, editingTask.id, {
         title: editingTask.projectIdentifier && editingTask.serialNumber
           ? formatTaskTitle(editingTask.projectIdentifier, editingTask.serialNumber, data.title)
@@ -132,7 +134,7 @@ const Tasks = () => {
         status: data.status,
         urgency: data.urgency,
         category: data.category,
-        attachments: [...data.keptAttachments, ...uploadedAttachments],
+        attachments,
         updatedByUid: user.uid,
       });
 
@@ -143,6 +145,8 @@ const Tasks = () => {
           toast.error('Task aggiornata, ma alcuni vecchi allegati non sono stati rimossi');
         }
       }
+
+      return { attachments };
     } else {
       if (!projectIdentifier) {
         toast.error('Aggiungi prima il seriale progetto', {
@@ -179,7 +183,6 @@ const Tasks = () => {
         }
       }
     }
-    setEditingTask(null);
   };
 
   const handleEdit = (task: Task) => {

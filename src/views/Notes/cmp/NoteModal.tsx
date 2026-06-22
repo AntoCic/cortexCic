@@ -10,6 +10,7 @@ import { NoteType, NoteTypeColor, NoteTypeIcon, NoteTypeLabel } from '../../../e
 import type { NoteTypeValue } from '../../../enums/NoteType';
 import type { Note } from '../../../db/notes/Note';
 import NoteEditor from './NoteEditor';
+import ConfirmModal from '../../../components/ConfirmModal/ConfirmModal';
 import styles from './NoteModal.module.css';
 
 const PRESET_TAGS = ['frontend', 'backend', 'lexhero', 'react', 'vue', 'docker'];
@@ -132,6 +133,8 @@ const NoteModal = ({
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [closing, setClosing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const persistedNoteRef = useRef<Note | null>(initial ?? null);
   const createdInSessionRef = useRef(!initial);
@@ -334,6 +337,27 @@ const NoteModal = ({
     void handleRequestClose();
   };
 
+  const handleConfirmDelete = async () => {
+    const note = persistedNoteRef.current;
+    if (!note) return;
+
+    setDeleting(true);
+    try {
+      await onDelete({
+        ...note,
+        attachments: [...attachments, ...removedAttachmentsRef.current],
+      });
+      setConfirmDelete(false);
+      onClose();
+    } catch (error) {
+      console.error('[NoteModal] delete failed', { error, noteId: note.id });
+      toast.error('Eliminazione nota non riuscita');
+      throw error;
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleAddFiles = async (files: File[]) => {
     const note = await ensurePersistedNote();
     if (!note) return;
@@ -436,14 +460,27 @@ const NoteModal = ({
             </span>
             {saveStatusLabel}
           </span>
-          <Btn
-            version="outline"
-            color="secondary"
-            onClick={requestClose}
-            disabled={closing}
-          >
-            Chiudi
-          </Btn>
+          <div className="d-flex align-items-center gap-2">
+            {isEditing && (
+              <Btn
+                version="outline"
+                color="danger"
+                onClick={() => setConfirmDelete(true)}
+                disabled={closing || deleting}
+              >
+                <span className="material-symbols-outlined me-1" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>delete</span>
+                Elimina
+              </Btn>
+            )}
+            <Btn
+              version="outline"
+              color="secondary"
+              onClick={requestClose}
+              disabled={closing}
+            >
+              Chiudi
+            </Btn>
+          </div>
         </div>
       )}
     >
@@ -623,6 +660,22 @@ const NoteModal = ({
           setContent(nextValue);
           setSaveState((prev) => (prev === 'saving' ? prev : 'dirty'));
         }}
+      />
+
+      <ConfirmModal
+        show={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={handleConfirmDelete}
+        title="Elimina nota"
+        confirmLabel="Elimina"
+        confirmIcon="delete"
+        message={(
+          <>
+            Vuoi eliminare <strong>{title.trim() || 'questa nota'}</strong>?
+            <br />
+            L’azione è irreversibile.
+          </>
+        )}
       />
     </Modal>
   );
