@@ -57,7 +57,8 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     },
     {
       name: 'create_task',
-      description: 'Crea un task nel progetto Cortex (titolo, descrizione, categoria, stato). Usalo quando l\'utente vuole aggiungere un task, todo, o elemento al progetto Cortex.',
+      description:
+        'Crea un task nel progetto Cortex (titolo, descrizione, stato). Usalo quando l\'utente vuole aggiungere un task, todo, o elemento al progetto Cortex.',
       inputSchema: {
         title: z.string().min(1).describe('Titolo della task'),
         description: z.string().optional().describe('Descrizione della task'),
@@ -75,7 +76,8 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     },
     {
       name: 'list_tasks',
-      description: 'Elenca i task del progetto Cortex. Usalo quando l\'utente vuole visualizzare, cercare o controllare i task del progetto. Opzionalmente filtra per stato (todo, inprogress, done, block).',
+      description:
+        'Elenca i task del progetto Cortex. Usalo quando l\'utente vuole visualizzare, cercare o controllare i task del progetto. Opzionalmente filtra per stato (todo, inprogress, done, block).',
       inputSchema: {
         status: z.enum(TASK_STATUSES).optional().describe('Filtra per colonna'),
       },
@@ -91,7 +93,8 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     },
     {
       name: 'update_task_status',
-      description: 'Sposta un task del progetto Cortex in uno stato diverso (todo, inprogress, done, block). Usalo quando l\'utente vuole aggiornare lo stato di una task nel progetto.',
+      description:
+        'Sposta un task del progetto Cortex in uno stato diverso (todo, inprogress, done, block). Usalo quando l\'utente vuole aggiornare lo stato di una task nel progetto.',
       inputSchema: {
         taskId: z.string().min(1).describe('ID della task da aggiornare'),
         status: z.enum(TASK_STATUSES).describe('Nuova colonna'),
