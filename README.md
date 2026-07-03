@@ -25,3 +25,10 @@ src/firebase-config.ts — tutti i valori (apiKey, authDomain, projectId, storag
     }
   }
 }
+
+Configura l'MCP server "cortex" per questo progetto.
+
+1. Individua la cartella del cortex-mcp-server in (\dev\cortexCic\mcp-server).
+2. Trova le chiavi necessarie in questo progetto e poi Registra il server MCP `claude mcp add cortex --scope project -e CORTEX_API_KEY=<INSERISCI_QUI> -e CORTEX_FUNCTIONS_BASE_URL=<INSERISCI_QUI> -- node <percorso-assoluto-a>/dist/index.js`
+   (usa lo scope "project" così la chiave resta legata solo a questo progetto e non si propaga ad altri).
+3. Verifica con `claude mcp list` che "cortex" risulti Connected.
