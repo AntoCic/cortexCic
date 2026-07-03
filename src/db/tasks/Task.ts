@@ -17,6 +17,8 @@ export interface Task {
   category: TaskCategoryValue;
   attachments?: Attachment[];
   assigneeUid?: string;
+  dueDate?: Timestamp;
+  reminderSentAt?: Timestamp;
   order: number;
   createdByUid: string;
   updatedByUid?: string;

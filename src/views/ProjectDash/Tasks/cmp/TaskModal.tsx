@@ -15,6 +15,7 @@ import { getAttachmentKind } from '../../../../db/attachments/attachmentUtils';
 import type { Task } from '../../../../db/tasks/Task';
 import type { ProjectMember } from '../../../../db/projects/Project';
 import { formatTaskTitle } from '../../../../db/tasks/taskTitle';
+import { timestampToDateInputValue } from '../../../../db/tasks/taskDueDate';
 import { useAuth } from '../../../../db/auth/useAuth';
 import type { TaskComment } from '../../../../db/tasks/taskCommentRepo';
 import { listTaskComments, addTaskComment, deleteTaskComment } from '../../../../db/tasks/taskCommentRepo';
@@ -32,6 +33,7 @@ export interface TaskModalValue {
   urgency: TaskUrgencyValue;
   category: TaskCategoryValue;
   assigneeUid: string;
+  dueDate: string;
   keptAttachments: Attachment[];
   removedAttachments: Attachment[];
   newFiles: File[];
@@ -108,6 +110,7 @@ function valueSignature(value: TaskModalValue): string {
     urgency: value.urgency,
     category: value.category,
     assigneeUid: value.assigneeUid,
+    dueDate: value.dueDate,
     kept: value.keptAttachments.map((a) => a.id),
     removed: value.removedAttachments.map((a) => a.id),
     files: value.newFiles.map((f) => `${f.name}:${f.size}`),
@@ -199,6 +202,7 @@ const TaskModal = ({
   const [urgency, setUrgency] = useState<TaskUrgencyValue>(TaskUrgency.Medium);
   const [category, setCategory] = useState<TaskCategoryValue>(TaskCategory.Feature);
   const [assigneeUid, setAssigneeUid] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [removedAttachments, setRemovedAttachments] = useState<Attachment[]>([]);
@@ -234,6 +238,7 @@ const TaskModal = ({
     setUrgency(initial?.urgency ?? TaskUrgency.Medium);
     setCategory(initial?.category ?? TaskCategory.Feature);
     setAssigneeUid(initial?.assigneeUid ?? '');
+    setDueDate(timestampToDateInputValue(initial?.dueDate));
     setAttachments(initial?.attachments ?? []);
     setDropzoneActive(false);
     setSaveState('idle');
@@ -249,6 +254,7 @@ const TaskModal = ({
       urgency: initial?.urgency ?? TaskUrgency.Medium,
       category: initial?.category ?? TaskCategory.Feature,
       assigneeUid: initial?.assigneeUid ?? '',
+      dueDate: timestampToDateInputValue(initial?.dueDate),
       keptAttachments: initial?.attachments ?? [],
       removedAttachments: [],
       newFiles: [],
@@ -276,10 +282,11 @@ const TaskModal = ({
     urgency,
     category,
     assigneeUid,
+    dueDate,
     keptAttachments: attachments,
     removedAttachments,
     newFiles: pendingAttachments.map((item) => item.file),
-  }), [title, description, status, urgency, category, assigneeUid, attachments, removedAttachments, pendingAttachments]);
+  }), [title, description, status, urgency, category, assigneeUid, dueDate, attachments, removedAttachments, pendingAttachments]);
 
   useEffect(() => {
     valueRef.current = currentValue;
@@ -444,6 +451,7 @@ const TaskModal = ({
         urgency,
         category,
         assigneeUid,
+        dueDate,
         keptAttachments: attachments,
         removedAttachments,
         newFiles: pendingAttachments.map((item) => item.file),
@@ -643,6 +651,33 @@ const TaskModal = ({
               <option key={uid} value={uid}>{member.email}</option>
             ))}
           </select>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldHeader}>
+            <span className={styles.fieldLabel}>
+              Scadenza <span className={styles.fieldOptional}>(opzionale)</span>
+            </span>
+          </label>
+          <div className="d-flex align-items-center gap-2">
+            <input
+              type="date"
+              className="form-control"
+              style={{ maxWidth: 200 }}
+              value={dueDate}
+              onChange={(event) => setDueDate(event.target.value)}
+            />
+            {dueDate && (
+              <button
+                type="button"
+                className={styles.fieldActionBtn}
+                onClick={() => setDueDate('')}
+                title="Rimuovi scadenza"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div

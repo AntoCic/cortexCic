@@ -20,6 +20,8 @@ interface NotifyProjectMembersParams {
   payload?: Record<string, unknown>;
   showPush?: boolean;
   excludeUid?: string;
+  /** Push-only targeting: send to just this member's tokens instead of the whole project. The in-app notification record is unaffected — it stays project-wide like every other notification (no per-recipient field exists on that model). */
+  onlyUid?: string;
 }
 
 function getProjectName(projectData: admin.firestore.DocumentData): string {
@@ -36,6 +38,7 @@ async function getProjectMemberTokens(
   db: admin.firestore.Firestore,
   projectData: admin.firestore.DocumentData,
   excludeUid?: string,
+  onlyUid?: string,
 ): Promise<string[]> {
   const memberUids: string[] = projectData.memberUids ?? [];
   if (!memberUids.length) return [];
@@ -43,7 +46,7 @@ async function getProjectMemberTokens(
   const tokens: string[] = [];
 
   await Promise.all(
-    memberUids
+    (onlyUid ? memberUids.filter((uid) => uid === onlyUid) : memberUids)
       .filter((uid) => uid && uid !== excludeUid)
       .map(async (uid) => {
         const userSnap = await db.collection('users').doc(uid).get();
@@ -62,8 +65,9 @@ export async function sendPushToProjectMembers({
   type,
   payload,
   excludeUid,
+  onlyUid,
 }: NotifyProjectMembersParams): Promise<void> {
-  const validTokens = await getProjectMemberTokens(db, projectData, excludeUid);
+  const validTokens = await getProjectMemberTokens(db, projectData, excludeUid, onlyUid);
   if (!validTokens.length) return;
 
   const payloadUrl = typeof payload?.url === 'string' ? payload.url : undefined;
@@ -117,6 +121,7 @@ export async function notifyProjectMembers(params: NotifyProjectMembersParams): 
     payload,
     showPush = false,
     excludeUid,
+    onlyUid,
   } = params;
 
   await createProjectNotification({
@@ -139,6 +144,7 @@ export async function notifyProjectMembers(params: NotifyProjectMembersParams): 
       payload,
       showPush,
       excludeUid,
+      onlyUid,
     });
   }
 }

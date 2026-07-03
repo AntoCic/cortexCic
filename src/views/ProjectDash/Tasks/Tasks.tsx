@@ -23,6 +23,7 @@ import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
 import type { Task } from '../../../db/tasks/Task';
 import { formatTaskTitle } from '../../../db/tasks/taskTitle';
+import { timestampToDateInputValue, dateInputToTimestamp } from '../../../db/tasks/taskDueDate';
 import KanbanColumn from './cmp/KanbanColumn';
 import TaskCard from './cmp/TaskCard';
 import TaskModal, { type TaskModalValue } from './cmp/TaskModal';
@@ -141,6 +142,7 @@ const Tasks = () => {
       }
 
       const attachments = [...data.keptAttachments, ...uploadedAttachments];
+      const dueDateChanged = data.dueDate !== timestampToDateInputValue(editingTask.dueDate);
 
       await updateTask(projectId, editingTask.id, {
         title: editingTask.projectIdentifier && editingTask.serialNumber
@@ -152,6 +154,9 @@ const Tasks = () => {
         urgency: data.urgency,
         category: data.category,
         assigneeUid: data.assigneeUid ? data.assigneeUid : deleteField(),
+        dueDate: data.dueDate ? dateInputToTimestamp(data.dueDate) : deleteField(),
+        // Due date moved: let the reminder fire again for the new date instead of staying suppressed.
+        ...(dueDateChanged ? { reminderSentAt: deleteField() } : {}),
         attachments,
         updatedByUid: user.uid,
       });
@@ -184,6 +189,7 @@ const Tasks = () => {
         urgency: data.urgency ?? TaskUrgency.Medium,
         category: data.category ?? TaskCategory.Feature,
         ...(data.assigneeUid ? { assigneeUid: data.assigneeUid } : {}),
+        ...(data.dueDate ? { dueDate: dateInputToTimestamp(data.dueDate) } : {}),
         attachments: [],
         projectId,
         order,

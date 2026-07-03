@@ -9,7 +9,7 @@ import {
   serverTimestamp,
   runTransaction,
 } from 'firebase/firestore';
-import type { FieldValue, Unsubscribe } from 'firebase/firestore';
+import type { FieldValue, Timestamp, Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
 import { TaskCategory } from '../../enums/TaskCategory';
 import type { Task, TaskWrite } from './Task';
@@ -75,7 +75,11 @@ export async function createTask(projectId: string, data: Omit<TaskWrite, 'creat
   });
 }
 
-type TaskPatch = Partial<Omit<TaskWrite, 'createdAt' | 'assigneeUid'>> & { assigneeUid?: string | FieldValue };
+type TaskPatch = Partial<Omit<TaskWrite, 'createdAt' | 'assigneeUid' | 'dueDate' | 'reminderSentAt'>> & {
+  assigneeUid?: string | FieldValue;
+  dueDate?: Timestamp | FieldValue;
+  reminderSentAt?: Timestamp | FieldValue;
+};
 
 export async function updateTask(projectId: string, taskId: string, patch: TaskPatch): Promise<void> {
   await updateDoc(doc(tasksCol(projectId), taskId), { ...patch, updatedAt: serverTimestamp() });

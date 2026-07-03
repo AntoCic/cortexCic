@@ -2,12 +2,33 @@ import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import type { Timestamp } from 'firebase/firestore';
 import AttachmentPanel from '../../../../components/AttachmentPanel/AttachmentPanel';
 import { TaskCategory, TASK_CATEGORY_ICONS, TASK_CATEGORY_LABELS } from '../../../../enums/TaskCategory';
 import type { Task } from '../../../../db/tasks/Task';
 import type { ProjectMember } from '../../../../db/projects/Project';
+import { TaskStatus } from '../../../../enums/TaskStatus';
 import { TaskUrgency, TASK_URGENCY_COLORS, TASK_URGENCY_ICONS, TASK_URGENCY_LABELS } from '../../../../enums/TaskUrgency';
 import styles from '../Tasks.module.css';
+
+type DueDateState = 'normal' | 'warning' | 'overdue';
+
+const DUE_DATE_COLORS: Record<DueDateState, string> = {
+  normal: '#495057',
+  warning: '#e8590c',
+  overdue: '#e03131',
+};
+
+function getDueDateState(dueDate: Timestamp, status: Task['status']): DueDateState {
+  const hoursUntilDue = (dueDate.toDate().getTime() - Date.now()) / (1000 * 60 * 60);
+  if (hoursUntilDue < 0) return status === TaskStatus.Done ? 'normal' : 'overdue';
+  if (hoursUntilDue <= 48) return 'warning';
+  return 'normal';
+}
+
+function formatDueDate(dueDate: Timestamp): string {
+  return dueDate.toDate().toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+}
 
 interface Props {
   task: Task;
@@ -75,6 +96,18 @@ const TaskCard = ({ task, onEdit, onDelete, members = {} }: Props) => {
                 {TASK_URGENCY_ICONS[taskUrgency]}
               </span>
               {TASK_URGENCY_LABELS[taskUrgency]}
+            </span>
+          )}
+          {task.dueDate && (
+            <span
+              className={styles.taskBadge}
+              style={{
+                color: DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)],
+                background: `${DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)]}14`,
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>event</span>
+              {formatDueDate(task.dueDate)}
             </span>
           )}
         </div>
