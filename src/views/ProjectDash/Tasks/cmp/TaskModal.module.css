@@ -283,6 +283,80 @@
   line-height: 1.5;
 }
 
+.commentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.commentEmpty {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #868e96;
+}
+
+.commentItem {
+  padding: 0.65rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+}
+
+.commentMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.commentAuthor {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #343a40;
+}
+
+.commentDate {
+  font-size: 0.74rem;
+  color: #868e96;
+}
+
+.commentDeleteBtn {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: #adb5bd;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.commentDeleteBtn:hover {
+  color: #e03131;
+  background: rgba(224, 49, 49, 0.08);
+}
+
+.commentText {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #343a40;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.commentComposer {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.commentInput {
+  flex: 1;
+}
+
 @media (max-width: 991px) {
   .optionGrid4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));

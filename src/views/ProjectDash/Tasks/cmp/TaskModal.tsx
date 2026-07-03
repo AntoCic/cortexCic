@@ -14,6 +14,9 @@ import type { Attachment } from '../../../../db/attachments/Attachment';
 import { getAttachmentKind } from '../../../../db/attachments/attachmentUtils';
 import type { Task } from '../../../../db/tasks/Task';
 import { formatTaskTitle } from '../../../../db/tasks/taskTitle';
+import { useAuth } from '../../../../db/auth/useAuth';
+import type { TaskComment } from '../../../../db/tasks/taskCommentRepo';
+import { listTaskComments, addTaskComment, deleteTaskComment } from '../../../../db/tasks/taskCommentRepo';
 import styles from './TaskModal.module.css';
 
 interface PendingAttachment extends Attachment {
@@ -87,6 +90,11 @@ function createPendingAttachment(file: File): PendingAttachment {
 
 function revokePendingAttachments(items: PendingAttachment[]) {
   items.forEach((item) => URL.revokeObjectURL(item.downloadURL));
+}
+
+function formatCommentDate(ts: TaskComment['createdAt']): string {
+  if (!ts) return '';
+  return ts.toDate().toLocaleDateString('it-IT', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 function valueSignature(value: TaskModalValue): string {
@@ -192,6 +200,10 @@ const TaskModal = ({
   const [dropzoneActive, setDropzoneActive] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [titleError, setTitleError] = useState(false);
+  const [comments, setComments] = useState<TaskComment[]>([]);
+  const [commentText, setCommentText] = useState('');
+  const [sendingComment, setSendingComment] = useState(false);
+  const { user, userProfile } = useAuth();
   const pendingAttachmentsRef = useRef<PendingAttachment[]>([]);
   const lastSavedSigRef = useRef('');
   const savingRef = useRef(false);
@@ -219,6 +231,8 @@ const TaskModal = ({
     setDropzoneActive(false);
     setSaveState('idle');
     setTitleError(false);
+    setComments([]);
+    setCommentText('');
     savingRef.current = false;
     rerunRef.current = false;
     lastSavedSigRef.current = valueSignature({
@@ -231,6 +245,13 @@ const TaskModal = ({
       removedAttachments: [],
       newFiles: [],
     });
+  }, [show, initial]);
+
+  useEffect(() => {
+    if (!show || !initial) return;
+    listTaskComments(initial.projectId, initial.id)
+      .then(setComments)
+      .catch(() => toast.error('Impossibile caricare i commenti'));
   }, [show, initial]);
 
   useEffect(() => () => revokePendingAttachments(pendingAttachmentsRef.current), []);
@@ -364,6 +385,37 @@ const TaskModal = ({
 
     setAttachments((prev) => prev.filter((item) => item.id !== attachment.id));
     setRemovedAttachments((prev) => [...prev, attachment]);
+  };
+
+  const handleSendComment = async () => {
+    const text = commentText.trim();
+    if (!text || !initial || !user) return;
+
+    const authorName = userProfile ? `${userProfile.firstName} ${userProfile.lastName}`.trim() : (user.displayName || user.email || 'Utente');
+
+    setSendingComment(true);
+    try {
+      await addTaskComment(initial.projectId, initial.id, { text, authorUid: user.uid, authorName });
+      setCommentText('');
+      const refreshed = await listTaskComments(initial.projectId, initial.id);
+      setComments(refreshed);
+    } catch {
+      toast.error('Invio commento non riuscito');
+    } finally {
+      setSendingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (comment: TaskComment) => {
+    if (!initial) return;
+    setComments((prev) => prev.filter((c) => c.id !== comment.id));
+    try {
+      await deleteTaskComment(initial.projectId, initial.id, comment.id);
+    } catch {
+      toast.error('Eliminazione commento non riuscita');
+      const refreshed = await listTaskComments(initial.projectId, initial.id);
+      setComments(refreshed);
+    }
   };
 
   const handleSave = async (event: FormEvent) => {
@@ -604,6 +656,62 @@ const TaskModal = ({
             onRemove={handleRemoveAttachment}
           />
         </div>
+
+        {isEditing && (
+          <div className={styles.section}>
+            <p className={styles.sectionLabel}>Commenti</p>
+
+            <div className={styles.commentList}>
+              {comments.length === 0 && (
+                <p className={styles.commentEmpty}>Nessun commento, sii il primo a scrivere.</p>
+              )}
+              {comments.map((comment) => (
+                <div key={comment.id} className={styles.commentItem}>
+                  <div className={styles.commentMeta}>
+                    <span className={styles.commentAuthor}>{comment.authorName}</span>
+                    <span className={styles.commentDate}>{formatCommentDate(comment.createdAt)}</span>
+                    {user?.uid === comment.authorUid && (
+                      <button
+                        type="button"
+                        className={styles.commentDeleteBtn}
+                        onClick={() => { void handleDeleteComment(comment); }}
+                        title="Elimina commento"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
+                      </button>
+                    )}
+                  </div>
+                  <p className={styles.commentText}>{comment.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className={styles.commentComposer}>
+              <input
+                type="text"
+                className={`form-control ${styles.commentInput}`}
+                value={commentText}
+                onChange={(event) => setCommentText(event.target.value)}
+                placeholder="Scrivi un commento..."
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    void handleSendComment();
+                  }
+                }}
+              />
+              <Btn
+                type="button"
+                color="primary"
+                onClick={() => { void handleSendComment(); }}
+                loading={sendingComment}
+                disabled={!commentText.trim()}
+              >
+                Invia
+              </Btn>
+            </div>
+          </div>
+        )}
       </form>
     </Modal>
   );

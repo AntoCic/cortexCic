@@ -53,6 +53,49 @@ export const onTaskCreated = onDocumentCreated(
   },
 );
 
+export const onTaskCommentCreated = onDocumentCreated(
+  {
+    region: REGION,
+    document: 'projects/{projectId}/tasks/{taskId}/comments/{commentId}',
+  },
+  async (event) => {
+    const snapshot = event.data;
+    if (!snapshot) return;
+
+    const comment = snapshot.data() as { authorName?: string };
+    const projectId = event.params.projectId;
+    const taskId = event.params.taskId;
+
+    const [projectSnap, taskSnap] = await Promise.all([
+      getProjectSnapshot(projectId),
+      admin.firestore().collection('projects').doc(projectId).collection('tasks').doc(taskId).get(),
+    ]);
+    if (!projectSnap.exists) return;
+
+    const projectData = projectSnap.data();
+    if (!projectData) return;
+
+    const taskTitle = (taskSnap.data() as TaskDoc | undefined)?.title?.trim() || 'una task';
+    const authorName = comment.authorName?.trim() || 'Qualcuno';
+
+    await notifyProjectMembers({
+      db: admin.firestore(),
+      projectId,
+      projectData,
+      type: 'info',
+      message: `${authorName} ha commentato ${taskTitle}`,
+      payload: {
+        event: 'task_comment_created',
+        projectId,
+        taskId,
+        taskTitle,
+        url: getTaskUrl(projectId),
+      },
+      showPush: true,
+    });
+  },
+);
+
 export const onTaskMovedToDone = onDocumentUpdated(
   {
     region: REGION,
