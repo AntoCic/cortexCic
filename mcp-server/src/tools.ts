@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { callCortexFunction, type CortexFunctionResponse } from './cortexClient.js';
 import type { CortexConfig } from './config.js';
 
-const LOG_TYPES = ['info', 'error', 'warning', 'deploy'] as const;
+const LOG_TYPES = ['info', 'error', 'warning', 'deploy', 'success'] as const;
 const TASK_STATUSES = ['todo', 'inprogress', 'done', 'block'] as const;
 
 export interface ToolTextResult {
@@ -34,7 +34,7 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     {
       name: 'get_recent_logs',
       description:
-        'Recupera i log di progetto (detti anche hubLog) del progetto Cortex configurato. Usa questo tool quando l\'utente chiede di visualizzare log, notifiche, hubLog o cronologia del progetto. Opzionalmente filtra per tipo (info, error, warning, deploy) e per numero di risultati.',
+        'Recupera i log di progetto (detti anche hubLog) del progetto Cortex configurato. Usa questo tool quando l\'utente chiede di visualizzare log, notifiche, hubLog o cronologia del progetto. Opzionalmente filtra per tipo (info, error, warning, deploy, success) e per numero di risultati.',
       inputSchema: {
         type: z.enum(LOG_TYPES).optional().describe('Filtra per tipo di log'),
         limit: z

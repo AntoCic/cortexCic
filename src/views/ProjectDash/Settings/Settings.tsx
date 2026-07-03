@@ -98,10 +98,11 @@ Create a \`hubLog\` utility (e.g. \`src/lib/hubLog.ts\` or \`utils/hubLog.ts\`).
   hubLog.error(message, payload?)    // exceptions and production errors
   hubLog.warning(message, payload?)  // degraded-state situations
   hubLog.deploy(message, payload?)   // deployment events
+  hubLog.success(message, payload?)  // successful outcomes
 
 Each method POSTs to the endpoint with:
   - Header: \`api-key: <HUB_LOG_API_KEY>\`
-  - Body: { message: string, type: 'info'|'error'|'warning'|'deploy', payload?: object, showPush?: boolean }
+  - Body: { message: string, type: 'info'|'error'|'warning'|'deploy'|'success', payload?: object, showPush?: boolean }
 
 Frontend projects: do NOT call the endpoint directly from the browser.
 Route log calls through a backend handler that keeps the API key server-side.
@@ -121,6 +122,7 @@ Use \`hubLog\` (cortexCic integration) for logging and error reporting.
 - \`hubLog.warning()\` — degraded-state situations
 - \`hubLog.info()\` — significant runtime events
 - \`hubLog.deploy()\` — deployment events
+- \`hubLog.success()\` — successful outcomes
 
 Do not use \`console.error\` for production errors — route them through \`hubLog\`.`;
 

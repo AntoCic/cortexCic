@@ -41,6 +41,7 @@
 .chipActive.error   { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
 .chipActive.warning { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
 .chipActive.deploy  { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+.chipActive.success { background: #dcfce7; color: #15803d; border-color: #86efac; }
 
 .markRead {
   display: flex;

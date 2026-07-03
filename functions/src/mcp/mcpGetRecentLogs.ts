@@ -2,7 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import * as admin from 'firebase-admin';
 import { resolveProjectByApiKey } from './resolveProjectByApiKey';
 
-const LOG_TYPES = ['info', 'error', 'warning', 'deploy'] as const;
+const LOG_TYPES = ['info', 'error', 'warning', 'deploy', 'success'] as const;
 type LogType = (typeof LOG_TYPES)[number];
 
 const DEFAULT_LIMIT = 20;

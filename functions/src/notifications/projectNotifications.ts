@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 
-export const PROJECT_NOTIFICATION_TYPES = ['info', 'error', 'warning', 'deploy'] as const;
+export const PROJECT_NOTIFICATION_TYPES = ['info', 'error', 'warning', 'deploy', 'success'] as const;
 export type ProjectNotificationType = (typeof PROJECT_NOTIFICATION_TYPES)[number];
 
 const TYPE_LABEL: Record<ProjectNotificationType, string> = {
@@ -8,6 +8,7 @@ const TYPE_LABEL: Record<ProjectNotificationType, string> = {
   error: 'Errore',
   warning: 'Warning',
   deploy: 'Deploy',
+  success: 'Success',
 };
 
 interface NotifyProjectMembersParams {

@@ -44,7 +44,7 @@ function downloadJson(data: unknown, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-const ALL_TYPES = new Set<NotificationType>(['info', 'error', 'warning', 'deploy']);
+const ALL_TYPES = new Set<NotificationType>(['info', 'error', 'warning', 'deploy', 'success']);
 
 const NotificationsPage = () => {
   const dispatch = useAppDispatch();

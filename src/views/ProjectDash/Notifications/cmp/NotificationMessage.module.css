@@ -17,6 +17,7 @@
 .error   { border-color: #ef4444; }
 .warning { border-color: #f59e0b; }
 .deploy  { border-color: #8b5cf6; }
+.success { border-color: #22c55e; }
 
 .header {
   display: flex;
@@ -54,6 +55,7 @@
 .error   .typeIcon { color: #ef4444; }
 .warning .typeIcon { color: #f59e0b; }
 .deploy  .typeIcon { color: #8b5cf6; }
+.success .typeIcon { color: #22c55e; }
 
 .typeBadge {
   font-size: 0.72rem;
@@ -68,6 +70,7 @@
 .badge_error   { background: #fee2e2; color: #b91c1c; }
 .badge_warning { background: #fef3c7; color: #92400e; }
 .badge_deploy  { background: #ede9fe; color: #6d28d9; }
+.badge_success { background: #dcfce7; color: #15803d; }
 
 .unreadDot {
   width: 7px;

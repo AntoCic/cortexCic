@@ -20,7 +20,7 @@ Two env vars, no `.env` file is read automatically — pass them through your MC
 
 This MCP server manages Cortex project tasks and logs (also known as hubLog). It does **not** access the local filesystem.
 
-- `get_recent_logs({ type?, limit? })` — Retrieves project logs (hubLog). Filter by type (info, error, warning, deploy) and limit.
+- `get_recent_logs({ type?, limit? })` — Retrieves project logs (hubLog). Filter by type (info, error, warning, deploy, success) and limit.
 - `create_task({ title, description?, status? })` — Creates a new task in the project.
 - `list_tasks({ status? })` — Lists project tasks, optionally filtered by status (todo, inprogress, done, block).
 - `update_task_status({ taskId, status })` — Updates a task's status.

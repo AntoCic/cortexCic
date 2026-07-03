@@ -1,13 +1,14 @@
 import type { NotificationType } from '../../../../db/notifications/Notification';
 import styles from './NotificationFilters.module.css';
 
-const ALL_TYPES: NotificationType[] = ['info', 'error', 'warning', 'deploy'];
+const ALL_TYPES: NotificationType[] = ['info', 'error', 'warning', 'deploy', 'success'];
 
 const TYPE_LABELS: Record<NotificationType, string> = {
   info: 'Info',
   error: 'Errore',
   warning: 'Warning',
   deploy: 'Deploy',
+  success: 'Success',
 };
 
 interface Props {

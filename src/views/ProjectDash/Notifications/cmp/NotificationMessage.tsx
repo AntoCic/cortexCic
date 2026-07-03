@@ -7,6 +7,7 @@ const TYPE_ICON: Record<NotificationType, string> = {
   error: 'error',
   warning: 'warning',
   deploy: 'rocket_launch',
+  success: 'check_circle',
 };
 
 const TYPE_LABEL: Record<NotificationType, string> = {
@@ -14,6 +15,7 @@ const TYPE_LABEL: Record<NotificationType, string> = {
   error: 'Errore',
   warning: 'Warning',
   deploy: 'Deploy',
+  success: 'Success',
 };
 
 function formatTime(ts: { toDate(): Date } | null | undefined): string {

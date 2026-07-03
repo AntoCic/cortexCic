@@ -1,6 +1,6 @@
 import type { Timestamp } from 'firebase/firestore';
 
-export type NotificationType = 'info' | 'error' | 'warning' | 'deploy';
+export type NotificationType = 'info' | 'error' | 'warning' | 'deploy' | 'success';
 
 export interface Notification {
   id: string;
