@@ -5,7 +5,13 @@ import { buildTools } from './tools.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
-  const server = new McpServer({ name: 'cortex-mcp-server', version: '0.1.0' });
+  const server = new McpServer(
+    { name: 'cortex-mcp-server', version: '0.1.0' },
+    {
+      instructions:
+        'Questo server MCP gestisce task e log del progetto Cortex. Non gestisce file del filesystem. Usa i tool disponibili per creare, aggiornare e visualizzare task del progetto, oppure per recuperare i log (detti anche hubLog).',
+    },
+  );
 
   for (const tool of buildTools(config)) {
     // registerTool's generic signature can't be inferred across a heterogeneous

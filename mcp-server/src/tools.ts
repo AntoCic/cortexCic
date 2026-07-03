@@ -34,7 +34,7 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     {
       name: 'get_recent_logs',
       description:
-        'Recupera gli ultimi log/notifiche del progetto cortexCic configurato, opzionalmente filtrati per tipo.',
+        'Recupera i log di progetto (detti anche hubLog) del progetto Cortex configurato. Usa questo tool quando l\'utente chiede di visualizzare log, notifiche, hubLog o cronologia del progetto. Opzionalmente filtra per tipo (info, error, warning, deploy) e per numero di risultati.',
       inputSchema: {
         type: z.enum(LOG_TYPES).optional().describe('Filtra per tipo di log'),
         limit: z
@@ -57,7 +57,7 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     },
     {
       name: 'create_task',
-      description: 'Crea una nuova task nella kanban del progetto cortexCic configurato.',
+      description: 'Crea un task nel progetto Cortex (titolo, descrizione, categoria, stato). Usalo quando l\'utente vuole aggiungere un task, todo, o elemento al progetto Cortex.',
       inputSchema: {
         title: z.string().min(1).describe('Titolo della task'),
         description: z.string().optional().describe('Descrizione della task'),
@@ -75,7 +75,7 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     },
     {
       name: 'list_tasks',
-      description: 'Elenca le task del progetto cortexCic configurato, opzionalmente filtrate per colonna.',
+      description: 'Elenca i task del progetto Cortex. Usalo quando l\'utente vuole visualizzare, cercare o controllare i task del progetto. Opzionalmente filtra per stato (todo, inprogress, done, block).',
       inputSchema: {
         status: z.enum(TASK_STATUSES).optional().describe('Filtra per colonna'),
       },
@@ -91,7 +91,7 @@ export function buildTools(config: CortexConfig): ToolDefinition[] {
     },
     {
       name: 'update_task_status',
-      description: 'Sposta una task del progetto cortexCic configurato in un’altra colonna.',
+      description: 'Sposta un task del progetto Cortex in uno stato diverso (todo, inprogress, done, block). Usalo quando l\'utente vuole aggiornare lo stato di una task nel progetto.',
       inputSchema: {
         taskId: z.string().min(1).describe('ID della task da aggiornare'),
         status: z.enum(TASK_STATUSES).describe('Nuova colonna'),
