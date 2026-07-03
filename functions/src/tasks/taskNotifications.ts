@@ -33,7 +33,6 @@ export const onTaskCreated = onDocumentCreated(
     const projectData = projectSnap.data();
     if (!projectData) return;
 
-    const projectName = typeof projectData.name === 'string' ? projectData.name : 'Progetto';
     const taskTitle = task.title?.trim() || 'Nuova task';
 
     await notifyProjectMembers({
@@ -41,7 +40,7 @@ export const onTaskCreated = onDocumentCreated(
       projectId,
       projectData,
       type: 'info',
-      message: `Nuova task in ${projectName}: ${taskTitle}`,
+      message: `Nuova task: ${taskTitle}`,
       payload: {
         event: 'task_created',
         projectId,
@@ -73,7 +72,6 @@ export const onTaskMovedToDone = onDocumentUpdated(
     const projectData = projectSnap.data();
     if (!projectData) return;
 
-    const projectName = typeof projectData.name === 'string' ? projectData.name : 'Progetto';
     const taskTitle = after.title?.trim() || 'Task completata';
 
     await notifyProjectMembers({
@@ -81,7 +79,7 @@ export const onTaskMovedToDone = onDocumentUpdated(
       projectId,
       projectData,
       type: 'deploy',
-      message: `Task completata in ${projectName}: ${taskTitle}`,
+      message: `Task completata: ${taskTitle}`,
       payload: {
         event: 'task_done',
         projectId,
