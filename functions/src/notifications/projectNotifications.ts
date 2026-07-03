@@ -22,6 +22,16 @@ interface NotifyProjectMembersParams {
   excludeUid?: string;
 }
 
+function getProjectName(projectData: admin.firestore.DocumentData): string {
+  const name = typeof projectData.name === 'string' ? projectData.name.trim() : '';
+  return name || 'Progetto';
+}
+
+// ponytail: fixed `[NomeProgetto] ` format everywhere, no truncation/identifier fallback — add if long names prove noisy
+function withProjectPrefix(projectData: admin.firestore.DocumentData, message: string): string {
+  return `[${getProjectName(projectData)}] ${message}`;
+}
+
 async function getProjectMemberTokens(
   db: admin.firestore.Firestore,
   projectData: admin.firestore.DocumentData,
@@ -61,7 +71,7 @@ export async function sendPushToProjectMembers({
   const fcmMessage: admin.messaging.MulticastMessage = {
     tokens: validTokens,
     data: {
-      title: `[${TYPE_LABEL[type]}] cortexCic`,
+      title: `[${getProjectName(projectData)}] ${TYPE_LABEL[type]}`,
       body: message,
       ...(payloadUrl ? { url: payloadUrl } : {}),
     },
@@ -113,7 +123,7 @@ export async function notifyProjectMembers(params: NotifyProjectMembersParams): 
     db,
     projectId,
     projectData,
-    message,
+    message: withProjectPrefix(projectData, message),
     type,
     payload,
     showPush,
