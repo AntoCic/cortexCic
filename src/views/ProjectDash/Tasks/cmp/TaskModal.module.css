@@ -119,6 +119,17 @@
   color: #6c757d;
 }
 
+.titleComposerError {
+  border-color: #e03131;
+  box-shadow: 0 0 0 1px rgba(224, 49, 49, 0.2);
+}
+
+.titleErrorText {
+  font-size: 0.78rem;
+  color: #e03131;
+  font-weight: 600;
+}
+
 .descriptionInput {
   min-height: 220px;
   resize: vertical;

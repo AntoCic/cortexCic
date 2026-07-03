@@ -191,6 +191,7 @@ const TaskModal = ({
   const [loading, setLoading] = useState(false);
   const [dropzoneActive, setDropzoneActive] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('idle');
+  const [titleError, setTitleError] = useState(false);
   const pendingAttachmentsRef = useRef<PendingAttachment[]>([]);
   const lastSavedSigRef = useRef('');
   const savingRef = useRef(false);
@@ -217,6 +218,7 @@ const TaskModal = ({
     setAttachments(initial?.attachments ?? []);
     setDropzoneActive(false);
     setSaveState('idle');
+    setTitleError(false);
     savingRef.current = false;
     rerunRef.current = false;
     lastSavedSigRef.current = valueSignature({
@@ -252,6 +254,10 @@ const TaskModal = ({
   useEffect(() => {
     valueRef.current = currentValue;
   }, [currentValue]);
+
+  useEffect(() => {
+    if (title.trim()) setTitleError(false);
+  }, [title]);
 
   const runAutosave = useCallback(async () => {
     const value = valueRef.current;
@@ -300,7 +306,10 @@ const TaskModal = ({
   // Autosave on edit: debounce field changes (creation keeps the explicit Salva button).
   useEffect(() => {
     if (!show || !isEditing) return;
-    if (!currentValue.title) return;
+    if (!currentValue.title) {
+      setTitleError(true);
+      return;
+    }
     if (valueSignature(currentValue) === lastSavedSigRef.current) return;
 
     setSaveState((prev) => (prev === 'saving' ? prev : 'dirty'));
@@ -359,7 +368,11 @@ const TaskModal = ({
 
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim()) {
+      setTitleError(true);
+      toast.error('Il titolo è obbligatorio');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -393,13 +406,14 @@ const TaskModal = ({
     onClose();
   };
 
-  const saveStatusLabel = saveState === 'saving' ? 'Salvataggio automatico…'
+  const saveStatusLabel = titleError ? 'Il titolo è obbligatorio'
+    : saveState === 'saving' ? 'Salvataggio automatico…'
     : saveState === 'saved' ? 'Tutto salvato'
     : saveState === 'error' ? 'Errore di salvataggio'
     : saveState === 'dirty' ? 'Modifiche in attesa…'
     : 'Autosave attivo';
 
-  const saveStatusIcon = saveState === 'error' ? 'error' : saveState === 'saved' ? 'check_circle' : 'sync';
+  const saveStatusIcon = titleError || saveState === 'error' ? 'error' : saveState === 'saved' ? 'check_circle' : 'sync';
 
   return (
     <Modal
@@ -414,7 +428,7 @@ const TaskModal = ({
           {isEditing ? (
             <span
               className="d-inline-flex align-items-center gap-1 small"
-              style={{ color: saveState === 'error' ? '#e03131' : '#6c757d' }}
+              style={{ color: titleError || saveState === 'error' ? '#e03131' : '#6c757d' }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{saveStatusIcon}</span>
               {saveStatusLabel}
@@ -475,7 +489,7 @@ const TaskModal = ({
             </span>
           </label>
 
-          <div className={styles.titleComposer}>
+          <div className={`${styles.titleComposer} ${titleError ? styles.titleComposerError : ''}`}>
             {titlePrefix && <span className={styles.titlePrefix}>{titlePrefix}</span>}
             <input
               type="text"
@@ -487,6 +501,10 @@ const TaskModal = ({
               autoFocus
             />
           </div>
+
+          {titleError && (
+            <div className={styles.titleErrorText}>Il titolo è obbligatorio</div>
+          )}
 
           {previewTitle && titlePrefix && (
             <div className={styles.titlePreview}>{previewTitle}</div>

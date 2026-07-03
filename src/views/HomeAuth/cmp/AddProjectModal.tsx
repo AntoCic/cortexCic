@@ -25,6 +25,7 @@ const AddProjectModal = ({ show, onClose }: Props) => {
   const [identifier, setIdentifier] = useState('');
   const [identifierTouched, setIdentifierTouched] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [nameError, setNameError] = useState(false);
 
   const suggestedIdentifier = suggestProjectIdentifier(name);
 
@@ -32,6 +33,7 @@ const AddProjectModal = ({ show, onClose }: Props) => {
 
   const handleNameChange = (value: string) => {
     setName(value);
+    if (value.trim()) setNameError(false);
 
     if (!identifierTouched || identifier === suggestedIdentifier) {
       setIdentifier(suggestProjectIdentifier(value));
@@ -40,7 +42,12 @@ const AddProjectModal = ({ show, onClose }: Props) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !name.trim()) return;
+    if (!user) return;
+    if (!name.trim()) {
+      setNameError(true);
+      toast.error('Il nome del progetto è obbligatorio');
+      return;
+    }
     if (identifierError) {
       toast.error(identifierError);
       return;
@@ -98,13 +105,14 @@ const AddProjectModal = ({ show, onClose }: Props) => {
           <label className="form-label fw-semibold">Nome progetto</label>
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${nameError ? 'is-invalid' : ''}`}
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
             placeholder="es. My App"
             required
             autoFocus
           />
+          {nameError && <div className="invalid-feedback">Il nome del progetto è obbligatorio</div>}
         </div>
         <div className="mb-3">
           <label className="form-label fw-semibold">Identificativo progetto</label>
