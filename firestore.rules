@@ -65,7 +65,9 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.auth.uid in request.resource.data.members;
-      allow update: if isProjectAdmin(projectId);
+      allow update: if isProjectAdmin(projectId)
+        || (isProjectMember(projectId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['taskSerialCounter', 'updatedAt']));
       allow delete: if isProjectAdmin(projectId) && resource.data.ownerId == request.auth.uid;
 
       match /tasks/{taskId} {
