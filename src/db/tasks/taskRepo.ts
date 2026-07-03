@@ -9,7 +9,7 @@ import {
   serverTimestamp,
   runTransaction,
 } from 'firebase/firestore';
-import type { Unsubscribe } from 'firebase/firestore';
+import type { FieldValue, Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
 import { TaskCategory } from '../../enums/TaskCategory';
 import type { Task, TaskWrite } from './Task';
@@ -75,7 +75,9 @@ export async function createTask(projectId: string, data: Omit<TaskWrite, 'creat
   });
 }
 
-export async function updateTask(projectId: string, taskId: string, patch: Partial<Omit<TaskWrite, 'createdAt'>>): Promise<void> {
+type TaskPatch = Partial<Omit<TaskWrite, 'createdAt' | 'assigneeUid'>> & { assigneeUid?: string | FieldValue };
+
+export async function updateTask(projectId: string, taskId: string, patch: TaskPatch): Promise<void> {
   await updateDoc(doc(tasksCol(projectId), taskId), { ...patch, updatedAt: serverTimestamp() });
 }
 

@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { Task } from '../../../../db/tasks/Task';
+import type { ProjectMember } from '../../../../db/projects/Project';
 import type { TaskStatusValue } from '../../../../enums/TaskStatus';
 import { fadeUp } from '../../../../styles/motionVariants';
 import TaskCard from './TaskCard';
@@ -22,9 +23,10 @@ interface Props {
   onDelete: (task: Task) => void;
   hiddenCount?: number;
   onLoadMore?: () => void;
+  members?: Record<string, ProjectMember>;
 }
 
-const KanbanColumn = ({ status, label, tasks, onEdit, onDelete, hiddenCount = 0, onLoadMore }: Props) => {
+const KanbanColumn = ({ status, label, tasks, onEdit, onDelete, hiddenCount = 0, onLoadMore, members }: Props) => {
   const shouldReduceMotion = useReducedMotion();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
@@ -52,7 +54,7 @@ const KanbanColumn = ({ status, label, tasks, onEdit, onDelete, hiddenCount = 0,
           <AnimatePresence initial={false}>
             {tasks.map((t) => (
               shouldReduceMotion ? (
-                <TaskCard key={t.id} task={t} onEdit={onEdit} onDelete={onDelete} />
+                <TaskCard key={t.id} task={t} onEdit={onEdit} onDelete={onDelete} members={members} />
               ) : (
                 <motion.div
                   key={t.id}
@@ -61,7 +63,7 @@ const KanbanColumn = ({ status, label, tasks, onEdit, onDelete, hiddenCount = 0,
                   animate="visible"
                   exit="exit"
                 >
-                  <TaskCard task={t} onEdit={onEdit} onDelete={onDelete} />
+                  <TaskCard task={t} onEdit={onEdit} onDelete={onDelete} members={members} />
                 </motion.div>
               )
             ))}

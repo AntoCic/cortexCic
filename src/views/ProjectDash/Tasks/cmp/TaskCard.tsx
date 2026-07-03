@@ -5,6 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import AttachmentPanel from '../../../../components/AttachmentPanel/AttachmentPanel';
 import { TaskCategory, TASK_CATEGORY_ICONS, TASK_CATEGORY_LABELS } from '../../../../enums/TaskCategory';
 import type { Task } from '../../../../db/tasks/Task';
+import type { ProjectMember } from '../../../../db/projects/Project';
 import { TaskUrgency, TASK_URGENCY_COLORS, TASK_URGENCY_ICONS, TASK_URGENCY_LABELS } from '../../../../enums/TaskUrgency';
 import styles from '../Tasks.module.css';
 
@@ -12,9 +13,15 @@ interface Props {
   task: Task;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  members?: Record<string, ProjectMember>;
 }
 
-const TaskCard = ({ task, onEdit, onDelete }: Props) => {
+function getInitials(email: string): string {
+  const local = email.split('@')[0] || email;
+  return local.slice(0, 2).toUpperCase();
+}
+
+const TaskCard = ({ task, onEdit, onDelete, members = {} }: Props) => {
   const shouldReduceMotion = useReducedMotion();
   const [copied, setCopied] = useState(false);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -27,6 +34,7 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
   };
   const taskCategory = task.category ?? TaskCategory.Feature;
   const taskUrgency = task.urgency ?? TaskUrgency.Medium;
+  const assignee = task.assigneeUid ? members[task.assigneeUid] : undefined;
 
   const handleCopyDescription = () => {
     if (!task.description.trim()) return;
@@ -71,17 +79,24 @@ const TaskCard = ({ task, onEdit, onDelete }: Props) => {
           )}
         </div>
 
-        <button
-          type="button"
-          className={styles.taskDragHandle}
-          onClick={(event) => event.stopPropagation()}
-          title="Trascina task"
-          {...attributes}
-          {...listeners}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>drag_indicator</span>
-          Sposta
-        </button>
+        <div className={styles.taskCardTopRight}>
+          {assignee && (
+            <span className={styles.assigneeAvatar} title={assignee.email}>
+              {getInitials(assignee.email)}
+            </span>
+          )}
+          <button
+            type="button"
+            className={styles.taskDragHandle}
+            onClick={(event) => event.stopPropagation()}
+            title="Trascina task"
+            {...attributes}
+            {...listeners}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>drag_indicator</span>
+            Sposta
+          </button>
+        </div>
       </div>
       <div className={styles.taskTitle}>{task.title}</div>
       {task.description && <div className={styles.taskDesc}>{task.description}</div>}

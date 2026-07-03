@@ -16,6 +16,7 @@ export interface Task {
   urgency: TaskUrgencyValue;
   category: TaskCategoryValue;
   attachments?: Attachment[];
+  assigneeUid?: string;
   order: number;
   createdByUid: string;
   updatedByUid?: string;

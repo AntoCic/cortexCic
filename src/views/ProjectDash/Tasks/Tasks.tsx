@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { deleteField } from 'firebase/firestore';
 import {
   DndContext,
   PointerSensor,
@@ -52,6 +53,7 @@ const Tasks = () => {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [doneVisibleCount, setDoneVisibleCount] = useState(4);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [assigneeFilter, setAssigneeFilter] = useState('all');
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -61,10 +63,25 @@ const Tasks = () => {
     return unsub;
   }, [projectId, dispatch]);
 
+  const members = useMemo(() => currentProject?.members ?? {}, [currentProject?.members]);
+  const memberOptions = useMemo(
+    () => Object.entries(members).sort(([, a], [, b]) => a.email.localeCompare(b.email)),
+    [members],
+  );
+
+  const matchesAssigneeFilter = (task: Task) => {
+    if (assigneeFilter === 'all') return true;
+    if (assigneeFilter === 'mine') return task.assigneeUid === user?.uid;
+    return task.assigneeUid === assigneeFilter;
+  };
+
   const tasksForStatus = (status: TaskStatusValue) =>
     tasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order);
 
-  const allDoneTasks = tasksForStatus(TaskStatus.Done);
+  const visibleTasksForStatus = (status: TaskStatusValue) =>
+    tasksForStatus(status).filter(matchesAssigneeFilter);
+
+  const allDoneTasks = visibleTasksForStatus(TaskStatus.Done);
   const hiddenDoneCount = Math.max(allDoneTasks.length - doneVisibleCount, 0);
   const visibleDoneTasks = hiddenDoneCount > 0
     ? allDoneTasks.slice(-doneVisibleCount)
@@ -134,6 +151,7 @@ const Tasks = () => {
         status: data.status,
         urgency: data.urgency,
         category: data.category,
+        assigneeUid: data.assigneeUid ? data.assigneeUid : deleteField(),
         attachments,
         updatedByUid: user.uid,
       });
@@ -165,6 +183,7 @@ const Tasks = () => {
         status: data.status,
         urgency: data.urgency ?? TaskUrgency.Medium,
         category: data.category ?? TaskCategory.Feature,
+        ...(data.assigneeUid ? { assigneeUid: data.assigneeUid } : {}),
         attachments: [],
         projectId,
         order,
@@ -250,10 +269,25 @@ const Tasks = () => {
               </Btn>
             </div>
           )}
-          <Btn color="primary" onClick={openCreate}>
-            <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>add</span>
-            Nuova task
-          </Btn>
+          <div className="d-flex align-items-center gap-2">
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 'auto' }}
+              value={assigneeFilter}
+              onChange={(event) => setAssigneeFilter(event.target.value)}
+              aria-label="Filtra per assegnatario"
+            >
+              <option value="all">Tutti gli assegnatari</option>
+              <option value="mine">I miei task</option>
+              {memberOptions.map(([uid, member]) => (
+                <option key={uid} value={uid}>{member.email}</option>
+              ))}
+            </select>
+            <Btn color="primary" onClick={openCreate}>
+              <span className="material-symbols-outlined me-2" style={{ fontSize: 18, verticalAlign: 'text-bottom' }}>add</span>
+              Nuova task
+            </Btn>
+          </div>
         </div>
 
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -263,13 +297,14 @@ const Tasks = () => {
                 key={col}
                 status={col}
                 label={TASK_STATUS_LABELS[col]}
-                tasks={col === TaskStatus.Done ? visibleDoneTasks : tasksForStatus(col)}
+                tasks={col === TaskStatus.Done ? visibleDoneTasks : visibleTasksForStatus(col)}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 hiddenCount={col === TaskStatus.Done ? hiddenDoneCount : 0}
                 onLoadMore={col === TaskStatus.Done && hiddenDoneCount > 0
                   ? () => setDoneVisibleCount((prev) => prev + 4)
                   : undefined}
+                members={members}
               />
             ))}
           </div>
@@ -290,6 +325,7 @@ const Tasks = () => {
         projectIdentifier={projectIdentifier}
         nextSerialNumber={nextTaskNumber}
         showOnboardingHint={!editingTask && tasks.length < 3}
+        members={members}
       />
 
       <ConfirmModal

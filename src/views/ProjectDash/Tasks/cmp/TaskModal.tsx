@@ -13,6 +13,7 @@ import type { TaskUrgencyValue } from '../../../../enums/TaskUrgency';
 import type { Attachment } from '../../../../db/attachments/Attachment';
 import { getAttachmentKind } from '../../../../db/attachments/attachmentUtils';
 import type { Task } from '../../../../db/tasks/Task';
+import type { ProjectMember } from '../../../../db/projects/Project';
 import { formatTaskTitle } from '../../../../db/tasks/taskTitle';
 import { useAuth } from '../../../../db/auth/useAuth';
 import type { TaskComment } from '../../../../db/tasks/taskCommentRepo';
@@ -30,6 +31,7 @@ export interface TaskModalValue {
   status: TaskStatusValue;
   urgency: TaskUrgencyValue;
   category: TaskCategoryValue;
+  assigneeUid: string;
   keptAttachments: Attachment[];
   removedAttachments: Attachment[];
   newFiles: File[];
@@ -43,6 +45,7 @@ interface Props {
   projectIdentifier?: string;
   nextSerialNumber?: number;
   showOnboardingHint?: boolean;
+  members?: Record<string, ProjectMember>;
 }
 
 type OptionCard = {
@@ -104,6 +107,7 @@ function valueSignature(value: TaskModalValue): string {
     status: value.status,
     urgency: value.urgency,
     category: value.category,
+    assigneeUid: value.assigneeUid,
     kept: value.keptAttachments.map((a) => a.id),
     removed: value.removedAttachments.map((a) => a.id),
     files: value.newFiles.map((f) => `${f.name}:${f.size}`),
@@ -187,12 +191,14 @@ const TaskModal = ({
   projectIdentifier,
   nextSerialNumber = 1,
   showOnboardingHint = false,
+  members = {},
 }: Props) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatusValue>(TaskStatus.Todo);
   const [urgency, setUrgency] = useState<TaskUrgencyValue>(TaskUrgency.Medium);
   const [category, setCategory] = useState<TaskCategoryValue>(TaskCategory.Feature);
+  const [assigneeUid, setAssigneeUid] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [removedAttachments, setRemovedAttachments] = useState<Attachment[]>([]);
@@ -227,6 +233,7 @@ const TaskModal = ({
     setStatus(initial?.status ?? TaskStatus.Todo);
     setUrgency(initial?.urgency ?? TaskUrgency.Medium);
     setCategory(initial?.category ?? TaskCategory.Feature);
+    setAssigneeUid(initial?.assigneeUid ?? '');
     setAttachments(initial?.attachments ?? []);
     setDropzoneActive(false);
     setSaveState('idle');
@@ -241,6 +248,7 @@ const TaskModal = ({
       status: initial?.status ?? TaskStatus.Todo,
       urgency: initial?.urgency ?? TaskUrgency.Medium,
       category: initial?.category ?? TaskCategory.Feature,
+      assigneeUid: initial?.assigneeUid ?? '',
       keptAttachments: initial?.attachments ?? [],
       removedAttachments: [],
       newFiles: [],
@@ -267,10 +275,11 @@ const TaskModal = ({
     status,
     urgency,
     category,
+    assigneeUid,
     keptAttachments: attachments,
     removedAttachments,
     newFiles: pendingAttachments.map((item) => item.file),
-  }), [title, description, status, urgency, category, attachments, removedAttachments, pendingAttachments]);
+  }), [title, description, status, urgency, category, assigneeUid, attachments, removedAttachments, pendingAttachments]);
 
   useEffect(() => {
     valueRef.current = currentValue;
@@ -434,6 +443,7 @@ const TaskModal = ({
         status,
         urgency,
         category,
+        assigneeUid,
         keptAttachments: attachments,
         removedAttachments,
         newFiles: pendingAttachments.map((item) => item.file),
@@ -466,6 +476,8 @@ const TaskModal = ({
     : 'Autosave attivo';
 
   const saveStatusIcon = titleError || saveState === 'error' ? 'error' : saveState === 'saved' ? 'check_circle' : 'sync';
+
+  const memberOptions = Object.entries(members).sort(([, a], [, b]) => a.email.localeCompare(b.email));
 
   return (
     <Modal
@@ -615,6 +627,22 @@ const TaskModal = ({
             columnsClassName={styles.optionGrid4}
             onChange={setUrgency}
           />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldHeader}>
+            <span className={styles.fieldLabel}>Assegnato a</span>
+          </label>
+          <select
+            className="form-select"
+            value={assigneeUid}
+            onChange={(event) => setAssigneeUid(event.target.value)}
+          >
+            <option value="">Nessuno</option>
+            {memberOptions.map(([uid, member]) => (
+              <option key={uid} value={uid}>{member.email}</option>
+            ))}
+          </select>
         </div>
 
         <div
