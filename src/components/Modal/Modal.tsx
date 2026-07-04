@@ -56,7 +56,7 @@ export const Modal: React.FC<ModalProps> = ({
             {title && (
               <div className="modal-header">
                 <h5 className="modal-title">{title}</h5>
-                <div className="d-flex align-items-center" style={{ gap: '0.9rem' }}>
+                <div className="d-flex align-items-center" style={{ gap: '1.75rem' }}>
                   {headerActions}
                   <button
                     type="button"

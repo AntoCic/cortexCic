@@ -156,9 +156,22 @@ const OptionSelector = <T extends string>({
   columnsClassName,
   compact = false,
   onChange,
-}: SelectorProps<T>) => (
+}: SelectorProps<T>) => {
+  const activeOption = options.find((option) => option.value === value);
+
+  return (
   <div className={styles.section}>
-    <p className={styles.sectionLabel}>{label}</p>
+    <p className={styles.sectionLabel}>
+      {label}
+      {activeOption && (
+        <span
+          className={styles.sectionValueBadge}
+          style={{ '--option-color': activeOption.color } as CSSProperties}
+        >
+          {activeOption.label}
+        </span>
+      )}
+    </p>
     <div className={`${styles.optionGrid} ${columnsClassName}`}>
       {options.map((option) => {
         const active = option.value === value;
@@ -186,7 +199,8 @@ const OptionSelector = <T extends string>({
       })}
     </div>
   </div>
-);
+  );
+};
 
 const TaskModal = ({
   show,

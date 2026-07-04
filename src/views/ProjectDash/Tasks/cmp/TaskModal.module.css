@@ -75,6 +75,21 @@
   margin: 0;
 }
 
+.sectionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sectionValueBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  color: var(--option-color, #6c63ff);
+  background: color-mix(in srgb, var(--option-color, #6c63ff) 14%, white);
+}
+
 .fieldGroup {
   display: flex;
   flex-direction: column;
