@@ -78,15 +78,16 @@ const TaskCard = ({ task, onEdit, onDelete, members = {} }: Props) => {
     >
       <div className={styles.taskCardTop}>
         <div className={styles.taskMeta}>
-          <span className={styles.taskBadge}>
+          <span className={styles.taskBadge} title={TASK_CATEGORY_LABELS[taskCategory]}>
             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
               {TASK_CATEGORY_ICONS[taskCategory]}
             </span>
-            {TASK_CATEGORY_LABELS[taskCategory]}
+            <span className={styles.taskBadgeLabel}>{TASK_CATEGORY_LABELS[taskCategory]}</span>
           </span>
           {taskUrgency && (
             <span
               className={styles.taskBadge}
+              title={TASK_URGENCY_LABELS[taskUrgency]}
               style={{
                 color: TASK_URGENCY_COLORS[taskUrgency],
                 background: `${TASK_URGENCY_COLORS[taskUrgency]}14`,
@@ -95,19 +96,20 @@ const TaskCard = ({ task, onEdit, onDelete, members = {} }: Props) => {
               <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
                 {TASK_URGENCY_ICONS[taskUrgency]}
               </span>
-              {TASK_URGENCY_LABELS[taskUrgency]}
+              <span className={styles.taskBadgeLabel}>{TASK_URGENCY_LABELS[taskUrgency]}</span>
             </span>
           )}
           {task.dueDate && (
             <span
               className={styles.taskBadge}
+              title={formatDueDate(task.dueDate)}
               style={{
                 color: DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)],
                 background: `${DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)]}14`,
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 14 }}>event</span>
-              {formatDueDate(task.dueDate)}
+              <span className={styles.taskBadgeLabel}>{formatDueDate(task.dueDate)}</span>
             </span>
           )}
         </div>

@@ -278,10 +278,9 @@ const Tasks = () => {
               </Btn>
             </div>
           )}
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2 flex-wrap">
             <select
-              className="form-select form-select-sm"
-              style={{ width: 'auto' }}
+              className={`form-select ${styles.assigneeFilterSelect}`}
               value={assigneeFilter}
               onChange={(event) => setAssigneeFilter(event.target.value)}
               aria-label="Filtra per assegnatario"
