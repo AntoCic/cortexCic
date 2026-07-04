@@ -5,6 +5,7 @@ export interface ModalProps {
   show: boolean;
   onClose: () => void;
   title?: string;
+  headerActions?: React.ReactNode;
   children?: React.ReactNode;
   footer?: React.ReactNode;
   size?: 'sm' | 'lg' | 'xl';
@@ -17,6 +18,7 @@ export const Modal: React.FC<ModalProps> = ({
   show,
   onClose,
   title,
+  headerActions,
   children,
   footer,
   size,
@@ -54,12 +56,15 @@ export const Modal: React.FC<ModalProps> = ({
             {title && (
               <div className="modal-header">
                 <h5 className="modal-title">{title}</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={onClose}
-                  aria-label="Close"
-                />
+                <div className="d-flex align-items-center" style={{ gap: '0.9rem' }}>
+                  {headerActions}
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={onClose}
+                    aria-label="Close"
+                  />
+                </div>
               </div>
             )}
             <div className="modal-body">{children}</div>

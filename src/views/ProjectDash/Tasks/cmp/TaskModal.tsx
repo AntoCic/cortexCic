@@ -171,6 +171,8 @@ const OptionSelector = <T extends string>({
             className={`${styles.optionCard} ${compact ? styles.optionCardCompact : ''} ${active ? styles.optionCardActive : ''}`}
             style={inlineStyle}
             onClick={() => onChange(option.value)}
+            aria-label={option.label}
+            title={option.label}
           >
             <span className={styles.optionIcon}>
               <span className="material-symbols-outlined" style={{ fontSize: compact ? 18 : 20 }}>{option.icon}</span>
@@ -434,8 +436,7 @@ const TaskModal = ({
     }
   };
 
-  const handleSave = async (event: FormEvent) => {
-    event.preventDefault();
+  const performSave = async () => {
     if (!title.trim()) {
       setTitleError(true);
       toast.error('Il titolo è obbligatorio');
@@ -461,6 +462,11 @@ const TaskModal = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSave = async (event: FormEvent) => {
+    event.preventDefault();
+    await performSave();
   };
 
   const handleRequestClose = () => {
@@ -497,6 +503,18 @@ const TaskModal = ({
       size="xl"
       centered
       scrollable
+      headerActions={!isEditing ? (
+        <button
+          type="button"
+          className={styles.headerSaveBtn}
+          onClick={() => { void performSave(); }}
+          disabled={loading}
+          aria-label="Salva task"
+          title="Salva task"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>save</span>
+        </button>
+      ) : undefined}
       footer={(
         <div className="d-flex w-100 align-items-center justify-content-between gap-3">
           {isEditing ? (
@@ -513,7 +531,12 @@ const TaskModal = ({
               {isEditing ? 'Chiudi' : 'Annulla'}
             </Btn>
             {!isEditing && (
-              <Btn color="primary" onClick={handleSave as never} loading={loading}>Salva</Btn>
+              <Btn color="primary" onClick={handleSave as never} loading={loading}>
+                <span className="d-inline-flex align-items-center gap-1">
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>save</span>
+                  Salva
+                </span>
+              </Btn>
             )}
           </div>
         </div>
@@ -521,10 +544,10 @@ const TaskModal = ({
     >
       <form
         onSubmit={isEditing ? (event) => { event.preventDefault(); void runAutosave(); } : handleSave}
-        className={styles.shell}
+        className={`${styles.shell} ${showOnboardingHint ? styles.shellWithHero : ''}`}
       >
         {showOnboardingHint && (
-          <div className={styles.hero}>
+          <div className={`${styles.hero} ${styles.areaHero}`}>
             <h3 className={styles.heroTitle}>Imposta contesto e priorità della task</h3>
             <p className={styles.heroText}>
               Stato, urgenza e categoria restano sempre visibili qui sotto, così scegli al volo senza menu nascosti.
@@ -532,14 +555,33 @@ const TaskModal = ({
           </div>
         )}
 
-        <OptionSelector
-          label="Categoria"
-          options={CATEGORY_OPTIONS}
-          value={category}
-          columnsClassName={styles.optionGrid3}
-          onChange={setCategory}
-        />
+        <div className={styles.areaCategory}>
+          <OptionSelector
+            label="Categoria"
+            options={CATEGORY_OPTIONS}
+            value={category}
+            columnsClassName={styles.optionGrid3}
+            onChange={setCategory}
+          />
+        </div>
 
+        <div className={`${styles.fieldGroup} ${styles.areaAssignee}`}>
+          <label className={styles.fieldHeader}>
+            <span className={styles.fieldLabel}>Assegnato a</span>
+          </label>
+          <select
+            className="form-select"
+            value={assigneeUid}
+            onChange={(event) => setAssigneeUid(event.target.value)}
+          >
+            <option value="">Nessuno</option>
+            {memberOptions.map(([uid, member]) => (
+              <option key={uid} value={uid}>{member.email}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.areaRestMain}>
         <div className={styles.fieldGroup}>
           <label className={styles.fieldHeader}>
             <span className={styles.fieldLabel}>Titolo</span>
@@ -619,69 +661,6 @@ const TaskModal = ({
           />
         </div>
 
-        <div className={styles.inlineSelectors}>
-          <OptionSelector
-            label="Stato"
-            options={STATUS_OPTIONS}
-            value={status}
-            compact
-            columnsClassName={styles.optionGrid4}
-            onChange={setStatus}
-          />
-
-          <OptionSelector
-            label="Urgenza"
-            options={URGENCY_OPTIONS}
-            value={urgency}
-            compact
-            columnsClassName={styles.optionGrid4}
-            onChange={setUrgency}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldHeader}>
-            <span className={styles.fieldLabel}>Assegnato a</span>
-          </label>
-          <select
-            className="form-select"
-            value={assigneeUid}
-            onChange={(event) => setAssigneeUid(event.target.value)}
-          >
-            <option value="">Nessuno</option>
-            {memberOptions.map(([uid, member]) => (
-              <option key={uid} value={uid}>{member.email}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldHeader}>
-            <span className={styles.fieldLabel}>
-              Scadenza <span className={styles.fieldOptional}>(opzionale)</span>
-            </span>
-          </label>
-          <div className="d-flex align-items-center gap-2">
-            <input
-              type="date"
-              className="form-control"
-              style={{ maxWidth: 200 }}
-              value={dueDate}
-              onChange={(event) => setDueDate(event.target.value)}
-            />
-            {dueDate && (
-              <button
-                type="button"
-                className={styles.fieldActionBtn}
-                onClick={() => setDueDate('')}
-                title="Rimuovi scadenza"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
-              </button>
-            )}
-          </div>
-        </div>
-
         <div
           className={`${styles.dropzoneShell} ${dropzoneActive ? styles.dropzoneShellActive : ''}`}
           onDragEnter={(event) => {
@@ -699,31 +678,17 @@ const TaskModal = ({
           }}
           onDrop={(event) => { void handleDropFiles(event); }}
         >
-          <div className={styles.dropzoneHeader}>
-            <div className={styles.dropzoneIcon}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                {dropzoneActive ? 'file_download_done' : 'upload_file'}
-              </span>
-            </div>
-            <div>
-              <div className={styles.dropzoneTitle}>Allega file alla task</div>
-              <div className={styles.dropzoneText}>
-                Trascina qui immagini, PDF o file generici, oppure usa il pulsante qui sotto.
-              </div>
-            </div>
-          </div>
-
           <AttachmentPanel
             attachments={combinedAttachments}
             title="Allegati task"
-            hint="Le immagini restano in preview, i PDF si aprono in una nuova tab."
+            hint="Trascina qui i file oppure usa il pulsante"
             onAddFiles={handleAddFiles}
             onRemove={handleRemoveAttachment}
           />
         </div>
 
         {isEditing && (
-          <div className={styles.section}>
+          <div className={`${styles.section} ${styles.commentsSection}`}>
             <p className={styles.sectionLabel}>Commenti</p>
 
             <div className={styles.commentList}>
@@ -777,6 +742,56 @@ const TaskModal = ({
             </div>
           </div>
         )}
+        </div>
+
+        <div className={styles.areaRestSide}>
+          <div className={styles.inlineSelectors}>
+            <OptionSelector
+              label="Stato"
+              options={STATUS_OPTIONS}
+              value={status}
+              compact
+              columnsClassName={styles.optionGrid4}
+              onChange={setStatus}
+            />
+
+            <OptionSelector
+              label="Urgenza"
+              options={URGENCY_OPTIONS}
+              value={urgency}
+              compact
+              columnsClassName={styles.optionGrid4}
+              onChange={setUrgency}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldHeader}>
+              <span className={styles.fieldLabel}>
+                Scadenza <span className={styles.fieldOptional}>(opzionale)</span>
+              </span>
+            </label>
+            <div className="d-flex align-items-center gap-2">
+              <input
+                type="date"
+                className="form-control"
+                style={{ maxWidth: 200 }}
+                value={dueDate}
+                onChange={(event) => setDueDate(event.target.value)}
+              />
+              {dueDate && (
+                <button
+                  type="button"
+                  className={styles.fieldActionBtn}
+                  onClick={() => setDueDate('')}
+                  title="Rimuovi scadenza"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>close</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       </form>
     </Modal>
   );

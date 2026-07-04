@@ -1,7 +1,41 @@
 .shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.1rem;
+  grid-template-areas:
+    "category"
+    "assignee"
+    "restmain"
+    "restside";
+}
+
+.shellWithHero {
+  grid-template-areas:
+    "hero"
+    "category"
+    "assignee"
+    "restmain"
+    "restside";
+}
+
+.areaHero { grid-area: hero; }
+.areaCategory { grid-area: category; }
+.areaAssignee { grid-area: assignee; }
+
+.areaRestMain {
+  grid-area: restmain;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
+  min-width: 0;
+}
+
+.areaRestSide {
+  grid-area: restside;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-width: 0;
 }
 
 .hero {
@@ -83,6 +117,32 @@
   transform: translateY(-1px);
   background: rgba(108, 99, 255, 0.12);
   border-color: rgba(108, 99, 255, 0.32);
+}
+
+/* Header quick-save button: same compact square language as .fieldActionBtn */
+.headerSaveBtn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(108, 99, 255, 0.24);
+  border-radius: 10px;
+  background: rgba(108, 99, 255, 0.1);
+  color: #6c63ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.headerSaveBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: rgba(108, 99, 255, 0.18);
+  border-color: rgba(108, 99, 255, 0.4);
+}
+
+.headerSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .titleComposer {
@@ -253,34 +313,9 @@
   transform: translateY(-1px);
 }
 
-.dropzoneHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.dropzoneIcon {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: rgba(108, 99, 255, 0.12);
-  color: #6c63ff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.dropzoneTitle {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-
-.dropzoneText {
-  font-size: 0.78rem;
-  color: #6c757d;
-  line-height: 1.5;
+.commentsSection {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 1.1rem;
 }
 
 .commentList {
@@ -357,6 +392,32 @@
   flex: 1;
 }
 
+@media (min-width: 992px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    grid-template-areas:
+      "category assignee"
+      "restmain restside";
+    align-items: start;
+  }
+
+  .shellWithHero {
+    grid-template-areas:
+      "hero hero"
+      "category assignee"
+      "restmain restside";
+  }
+
+  /* In the narrow right sidebar, stack Stato above Urgenza and lay each out as a 2-col compact grid. */
+  .areaRestSide .inlineSelectors {
+    grid-template-columns: 1fr;
+  }
+
+  .areaRestSide .optionGrid4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 991px) {
   .optionGrid4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -368,14 +429,28 @@
 }
 
 @media (max-width: 767px) {
+  /* Compact selectors: all options collapse into a single icon-only row. */
   .optionGrid3,
   .optionGrid4 {
-    grid-template-columns: 1fr;
+    display: flex;
+    gap: 0.4rem;
   }
 
-  .fieldHeader {
-    align-items: flex-start;
+  .optionGrid3 .optionCard,
+  .optionGrid4 .optionCard {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .optionGrid3 .optionContent,
+  .optionGrid4 .optionContent {
+    display: none;
   }
 
   .titleComposer {
@@ -387,9 +462,5 @@
     border-bottom: 1px solid rgba(108, 99, 255, 0.16);
     justify-content: center;
     padding: 0.65rem 0.75rem;
-  }
-
-  .dropzoneHeader {
-    align-items: flex-start;
   }
 }
