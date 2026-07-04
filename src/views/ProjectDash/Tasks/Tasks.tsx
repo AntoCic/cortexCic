@@ -22,6 +22,7 @@ import { TaskUrgency } from '../../../enums/TaskUrgency';
 import { Btn } from '../../../components/Btn/Btn';
 import { toast } from '../../../components/toast/toast';
 import type { Task } from '../../../db/tasks/Task';
+import type { ProjectMember } from '../../../db/projects/Project';
 import { formatTaskTitle } from '../../../db/tasks/taskTitle';
 import { timestampToDateInputValue, dateInputToTimestamp } from '../../../db/tasks/taskDueDate';
 import KanbanColumn from './cmp/KanbanColumn';
@@ -66,7 +67,9 @@ const Tasks = () => {
 
   const members = useMemo(() => currentProject?.members ?? {}, [currentProject?.members]);
   const memberOptions = useMemo(
-    () => Object.entries(members).sort(([, a], [, b]) => a.email.localeCompare(b.email)),
+    () => Object.entries(members)
+      .filter((entry): entry is [string, ProjectMember] => !!entry[1])
+      .sort(([, a], [, b]) => a.email.localeCompare(b.email)),
     [members],
   );
 

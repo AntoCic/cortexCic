@@ -485,7 +485,9 @@ const TaskModal = ({
 
   const saveStatusIcon = titleError || saveState === 'error' ? 'error' : saveState === 'saved' ? 'check_circle' : 'sync';
 
-  const memberOptions = Object.entries(members).sort(([, a], [, b]) => a.email.localeCompare(b.email));
+  const memberOptions = Object.entries(members)
+    .filter((entry): entry is [string, ProjectMember] => !!entry[1])
+    .sort(([, a], [, b]) => a.email.localeCompare(b.email));
 
   return (
     <Modal

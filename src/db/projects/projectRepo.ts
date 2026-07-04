@@ -10,6 +10,7 @@ import {
   serverTimestamp,
   arrayUnion,
   arrayRemove,
+  deleteField,
 } from 'firebase/firestore';
 import type { Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
@@ -77,7 +78,7 @@ export async function addMember(projectId: string, uid: string, member: ProjectM
 
 export async function removeMember(projectId: string, uid: string): Promise<void> {
   const patch: Record<string, unknown> = {
-    [`members.${uid}`]: null,
+    [`members.${uid}`]: deleteField(),
     memberUids: arrayRemove(uid),
     updatedAt: serverTimestamp(),
   };
