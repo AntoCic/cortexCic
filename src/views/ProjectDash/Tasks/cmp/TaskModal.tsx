@@ -517,7 +517,7 @@ const TaskModal = ({
       size="xl"
       centered
       scrollable
-      headerActions={!isEditing ? (
+      headerActions={(
         <button
           type="button"
           className={styles.headerSaveBtn}
@@ -528,7 +528,7 @@ const TaskModal = ({
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>save</span>
         </button>
-      ) : undefined}
+      )}
       footer={(
         <div className="d-flex w-100 align-items-center justify-content-between gap-3">
           {isEditing ? (
@@ -544,14 +544,12 @@ const TaskModal = ({
             <Btn version="outline" color="secondary" onClick={handleRequestClose} disabled={loading}>
               {isEditing ? 'Chiudi' : 'Annulla'}
             </Btn>
-            {!isEditing && (
-              <Btn color="primary" onClick={handleSave as never} loading={loading}>
-                <span className="d-inline-flex align-items-center gap-1">
-                  <span className="material-symbols-outlined" style={{ fontSize: 18 }}>save</span>
-                  Salva
-                </span>
-              </Btn>
-            )}
+            <Btn color="primary" onClick={handleSave as never} loading={loading}>
+              <span className="d-inline-flex align-items-center gap-1">
+                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>save</span>
+                Salva
+              </span>
+            </Btn>
           </div>
         </div>
       )}
