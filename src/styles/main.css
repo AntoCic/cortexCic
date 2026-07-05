@@ -1,2 +1,156 @@
+/* Import order: tokens → fonts → Bootstrap (views still rely on its grid/forms
+   until Phase 2) → global overrides layered on top. @import must precede rules. */
+@import './tokens.css';
 @import './partials/font.css';
 @import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* =========================================================================
+   GLOBAL BASE
+   ========================================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text);
+  background-color: var(--bg);
+  background-image: var(--app-backdrop);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text);
+}
+
+a {
+  color: var(--primary);
+  text-decoration-color: color-mix(in srgb, var(--primary) 40%, transparent);
+  text-underline-offset: 2px;
+  transition: var(--transition-colors);
+}
+a:hover {
+  color: var(--primary-strong);
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+}
+
+/* Text selection */
+::selection {
+  background: var(--primary-ring);
+  color: var(--text);
+}
+
+/* =========================================================================
+   FOCUS-VISIBLE  — consistent accent ring across the app
+   ========================================================================= */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-ring);
+  border-radius: var(--radius-xs);
+}
+/* Elements that manage their own rings opt out via their module CSS. */
+.btn:focus-visible {
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+
+/* =========================================================================
+   SCROLLBARS  (subtle — webkit + firefox)
+   ========================================================================= */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-subtle) 55%, transparent);
+  border-radius: var(--radius-pill);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary) 60%, var(--text-subtle));
+  background-clip: content-box;
+  border: 3px solid transparent;
+}
+
+/* =========================================================================
+   BOOTSTRAP FORM CONTROLS — retune to the new accent (was Bootstrap blue)
+   ========================================================================= */
+.form-control,
+.form-select,
+.form-check-input {
+  border-color: var(--border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  transition: var(--transition-colors);
+}
+.form-control::placeholder {
+  color: var(--text-subtle);
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+.form-check-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+.form-check-input:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.form-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Material Symbols default alignment nicety */
+.material-symbols-outlined {
+  line-height: 1;
+  vertical-align: middle;
+  font-variation-settings: 'opsz' 24, 'wght' 400, 'FILL' 0, 'GRAD' 0;
+}
+
+/* =========================================================================
+   REDUCED MOTION
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

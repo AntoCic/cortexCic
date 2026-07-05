@@ -59,7 +59,9 @@ const AccordionHeader: React.FC<{ children?: ReactNode }> = ({ children }) => {
           backgroundColor: "transparent",
           boxShadow: "none",
           color: "inherit",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.125)",
+          fontFamily: "var(--font-display)",
+          fontWeight: 600,
+          borderBottom: "1px solid var(--border)",
         }}
       >
         {children}

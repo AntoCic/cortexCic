@@ -73,7 +73,8 @@ const AppLayout = () => {
               )}
             </Link>
             <button
-              className={`btn btn-ghost btn-sm ${styles.logoutBtn}`}
+              type="button"
+              className={styles.logoutBtn}
               onClick={logout}
               title="Logout"
             >

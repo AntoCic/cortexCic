@@ -13,18 +13,45 @@ function renderWithSubtitle(title: string, subtitle: string, options?: HotToastO
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'stretch',
+          gap: '12px',
           opacity: t.visible ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-          padding: '8px 12px',
-          background: '#fff',
-          borderRadius: 8,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          maxWidth: 320,
+          transform: t.visible ? 'translateY(0)' : 'translateY(-8px)',
+          transition: 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1)',
+          padding: '12px 16px',
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-lg)',
+          maxWidth: 360,
+          fontFamily: 'var(--font-body)',
         }}
       >
-        <span style={{ fontWeight: 600, fontSize: 14 }}>{title}</span>
-        <span style={{ fontSize: 12, color: '#666', marginTop: 2 }}>{subtitle}</span>
+        <span
+          aria-hidden
+          style={{
+            width: 4,
+            borderRadius: 'var(--radius-pill)',
+            background: 'var(--gradient-primary)',
+            flexShrink: 0,
+          }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontWeight: 600,
+              fontSize: 14,
+              color: 'var(--text)',
+              lineHeight: 1.3,
+            }}
+          >
+            {title}
+          </span>
+          <span style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.4 }}>
+            {subtitle}
+          </span>
+        </div>
       </div>
     ),
     options,

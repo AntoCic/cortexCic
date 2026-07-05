@@ -24,8 +24,8 @@ const ImagePreviewModal = ({ imageUrl, imageName, onClose }: Props) => {
             width: '100%',
             maxHeight: '75vh',
             objectFit: 'contain',
-            borderRadius: 12,
-            background: '#f8f9fa',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--surface-sunken)',
           }}
         />
       )}

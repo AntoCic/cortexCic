@@ -1,0 +1,205 @@
+/* =========================================================================
+   cortexCic — Design Tokens (Phase 1 foundation)
+   Direction: "Aurora Indigo" — a premium violet/indigo system on a soft,
+   faintly luminous backdrop. Evolves the historical #6c63ff accent into a
+   richer indigo→violet spectrum with layered soft shadows and a geometric
+   display typeface (Space Grotesk) paired with a humanist UI face
+   (Plus Jakarta Sans).
+   ========================================================================= */
+
+:root {
+  /* ---------------------------------------------------------------------
+     BRAND / PRIMARY  (indigo → violet)
+     --------------------------------------------------------------------- */
+  --primary: #6d5efc;            /* main brand accent (buttons, links, focus) */
+  --primary-strong: #5642e6;     /* hover/active / pressed brand */
+  --primary-stronger: #4633c4;   /* deepest brand (text on light) */
+  --primary-soft: #efeaff;       /* soft tinted surface (badges, hovers) */
+  --primary-softer: #f6f3ff;     /* faintest tinted surface (row hover) */
+  --primary-contrast: #ffffff;   /* text/icon color on primary fills */
+  --primary-ring: rgba(109, 94, 252, 0.35); /* focus ring / glow */
+
+  /* Signature gradients (fills, accents, hero surfaces) */
+  --gradient-primary: linear-gradient(135deg, #7b6cff 0%, #9d5cf6 100%);
+  --gradient-primary-strong: linear-gradient(135deg, #6a5bf5 0%, #8b3ff0 100%);
+  --gradient-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 55%);
+
+  /* ---------------------------------------------------------------------
+     NEUTRAL SCALE  (cool, faint violet undertone)
+     --------------------------------------------------------------------- */
+  --bg: #f5f4fb;                 /* app body base */
+  --surface: #ffffff;            /* cards, panels, modals */
+  --surface-raised: #ffffff;     /* elevated surfaces (pair with --shadow-lg) */
+  --surface-sunken: #efeef7;     /* insets, wells, empty states */
+  --surface-overlay: rgba(255, 255, 255, 0.72); /* glass surfaces (blur backing) */
+
+  --border: #e7e4f1;             /* default hairline border */
+  --border-strong: #d6d1e6;      /* emphasized border / dividers */
+  --border-subtle: #f0eef8;      /* faintest separators */
+
+  --text: #1b1830;               /* primary text (deep indigo-black) */
+  --text-muted: #6a6784;         /* secondary text / labels */
+  --text-subtle: #9b97b1;        /* tertiary / placeholders / meta */
+  --text-on-accent: #ffffff;     /* text over saturated fills */
+
+  /* ---------------------------------------------------------------------
+     SEMANTIC  (harmonized with the indigo palette)
+     Each: base (fill/text), soft (tinted bg), border, plus a foreground.
+     --------------------------------------------------------------------- */
+  --success: #12a150;
+  --success-soft: #e6f6ec;
+  --success-border: #b7e6c7;
+
+  --warning: #e8930c;
+  --warning-soft: #fdf1de;
+  --warning-border: #f6d9a3;
+
+  --danger: #e5484d;
+  --danger-soft: #fdeaea;
+  --danger-border: #f5c2c4;
+
+  --info: #4f6bf6;
+  --info-soft: #e9edfe;
+  --info-border: #c2ccfb;
+
+  /* ---------------------------------------------------------------------
+     TASK STATES  (kanban columns) — solid + soft surface + text
+     To Do (gray) · In Progress (indigo/blue) · Done (green) · Blocked (red)
+     --------------------------------------------------------------------- */
+  --state-todo: #7b8199;
+  --state-todo-soft: #eef0f5;
+  --state-todo-text: #4a5066;
+
+  --state-progress: #4f6bf6;
+  --state-progress-soft: #e9edfe;
+  --state-progress-text: #2f45c4;
+
+  --state-done: #12a150;
+  --state-done-soft: #e6f6ec;
+  --state-done-text: #0b6d37;
+
+  --state-block: #e5484d;
+  --state-block-soft: #fdeaea;
+  --state-block-text: #b0282d;
+
+  /* ---------------------------------------------------------------------
+     URGENCY SCALE  (green → amber → orange → red)
+     --------------------------------------------------------------------- */
+  --urgency-low: #12a150;
+  --urgency-low-soft: #e6f6ec;
+  --urgency-medium: #e8b30c;
+  --urgency-medium-soft: #fdf6dd;
+  --urgency-high: #f07316;
+  --urgency-high-soft: #fdeede;
+  --urgency-critical: #e5484d;
+  --urgency-critical-soft: #fdeaea;
+
+  /* ---------------------------------------------------------------------
+     NOTIFICATION TYPES  (info · error · warning · deploy · success)
+     --------------------------------------------------------------------- */
+  --notif-info: #4f6bf6;
+  --notif-error: #e5484d;
+  --notif-warning: #e8930c;
+  --notif-deploy: #8b5cf6;       /* violet — pairs with brand */
+  --notif-success: #12a150;
+
+  /* ---------------------------------------------------------------------
+     TYPOGRAPHY
+     --------------------------------------------------------------------- */
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
+
+  /* Type scale (fluid-ish, rem based) */
+  --text-xs: 0.75rem;    /* 12px — meta, captions */
+  --text-sm: 0.85rem;    /* 13.6px — labels, secondary */
+  --text-base: 0.95rem;  /* 15.2px — body */
+  --text-md: 1.05rem;    /* 16.8px — emphasized body */
+  --text-lg: 1.25rem;    /* 20px — section titles */
+  --text-xl: 1.6rem;     /* 25.6px — page titles */
+  --text-2xl: 2.1rem;    /* 33.6px — hero */
+  --text-3xl: 2.9rem;    /* 46px — display */
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.55;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---------------------------------------------------------------------
+     RADII
+     --------------------------------------------------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 9px;
+  --radius-md: 12px;   /* default for controls/inputs */
+  --radius-lg: 16px;   /* cards */
+  --radius-xl: 22px;   /* modals / large panels */
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
+
+  /* ---------------------------------------------------------------------
+     SHADOWS  (layered, soft, indigo-tinted — premium, not Bootstrap)
+     --------------------------------------------------------------------- */
+  --shadow-xs: 0 1px 2px rgba(27, 24, 48, 0.06);
+  --shadow-sm: 0 2px 6px rgba(27, 24, 48, 0.07), 0 1px 2px rgba(27, 24, 48, 0.05);
+  --shadow-md: 0 6px 16px -4px rgba(27, 24, 48, 0.12), 0 2px 6px -2px rgba(27, 24, 48, 0.08);
+  --shadow-lg: 0 16px 40px -12px rgba(40, 31, 92, 0.22), 0 6px 14px -6px rgba(27, 24, 48, 0.10);
+  --shadow-xl: 0 32px 70px -18px rgba(40, 31, 92, 0.34), 0 10px 24px -10px rgba(27, 24, 48, 0.14);
+  --shadow-primary: 0 10px 28px -8px rgba(109, 94, 252, 0.55);      /* glow under brand fills */
+  --shadow-primary-sm: 0 4px 12px -3px rgba(109, 94, 252, 0.45);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  /* ---------------------------------------------------------------------
+     SPACING SCALE  (4px base)
+     --------------------------------------------------------------------- */
+  --space-1: 0.25rem;   /* 4 */
+  --space-2: 0.5rem;    /* 8 */
+  --space-3: 0.75rem;   /* 12 */
+  --space-4: 1rem;      /* 16 */
+  --space-5: 1.5rem;    /* 24 */
+  --space-6: 2rem;      /* 32 */
+  --space-7: 3rem;      /* 48 */
+  --space-8: 4rem;      /* 64 */
+
+  /* ---------------------------------------------------------------------
+     MOTION  (transitions + easing)
+     --------------------------------------------------------------------- */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);        /* decelerate — entrances */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* subtle overshoot */
+
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  --transition-colors: color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+  --transition-transform: transform var(--duration-base) var(--ease-out);
+
+  /* ---------------------------------------------------------------------
+     Z-INDEX (shared layering language)
+     --------------------------------------------------------------------- */
+  --z-nav: 100;
+  --z-backdrop: 1050;
+  --z-modal: 1055;
+  --z-toast: 1100;
+
+  /* ---------------------------------------------------------------------
+     APP BACKDROP  (premium ambient wash — faint indigo/violet radial glows)
+     Consumed by main.css on <body>.
+     --------------------------------------------------------------------- */
+  --app-backdrop:
+    radial-gradient(1100px 720px at 12% -8%, rgba(123, 108, 255, 0.14), transparent 60%),
+    radial-gradient(900px 640px at 108% 6%, rgba(157, 92, 246, 0.12), transparent 58%),
+    radial-gradient(760px 620px at 50% 118%, rgba(79, 107, 246, 0.08), transparent 60%),
+    var(--bg);
+}

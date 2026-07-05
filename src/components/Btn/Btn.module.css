@@ -1,7 +1,268 @@
-.ghost {
-  border-color: transparent !important;
+/* Btn restyle.
+   The Btn component keeps Bootstrap's `.btn .btn-{color}` / `.btn-outline-{color}`
+   classes for layout, and we override their LOOK here. Compound `:global` selectors
+   (.btn.btn-x = specificity 0,2,0) beat Bootstrap's single-class rules regardless
+   of stylesheet order, so no !important arms race is needed. */
+
+:global(.btn) {
+  --_btn-fg: var(--text);
+  --_btn-bg: transparent;
+  --_btn-border: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-family: var(--font-body);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--_btn-border);
+  color: var(--_btn-fg);
+  background: var(--_btn-bg);
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    filter var(--duration-fast) var(--ease-standard);
+}
+:global(.btn:hover) {
+  transform: translateY(-1px);
+}
+:global(.btn:active) {
+  transform: translateY(0) scale(0.985);
+}
+:global(.btn:focus-visible) {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-ring);
+}
+:global(.btn:disabled),
+:global(.btn.disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.15);
+}
+:global(.btn .material-symbols-outlined) {
+  font-size: 1.15em;
 }
 
-.ghost:hover {
+/* Icon that is the button's only child → make it square-ish (icon button) */
+:global(.btn.btn-sm) {
+  padding: 0.38rem 0.75rem;
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+:global(.btn.btn-lg) {
+  padding: 0.75rem 1.5rem;
+  font-size: var(--text-md);
+  border-radius: var(--radius-lg);
+}
+
+/* -----------------------------------------------------------------------
+   SOLID VARIANTS
+   ----------------------------------------------------------------------- */
+:global(.btn.btn-primary) {
+  color: var(--primary-contrast);
+  background: var(--gradient-primary);
+  border-color: transparent;
+  box-shadow: var(--shadow-primary-sm);
+}
+:global(.btn.btn-primary:hover) {
+  background: var(--gradient-primary-strong);
+  box-shadow: var(--shadow-primary);
+  color: var(--primary-contrast);
+}
+:global(.btn.btn-primary:active) {
+  box-shadow: var(--shadow-primary-sm);
+}
+
+:global(.btn.btn-secondary) {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-xs);
+}
+:global(.btn.btn-secondary:hover) {
+  color: var(--text);
+  background: var(--surface-sunken);
+  border-color: var(--text-subtle);
+}
+
+:global(.btn.btn-success) {
+  color: #fff;
+  background: var(--success);
+  border-color: transparent;
+  box-shadow: 0 4px 12px -3px color-mix(in srgb, var(--success) 55%, transparent);
+}
+:global(.btn.btn-success:hover) {
+  color: #fff;
+  background: color-mix(in srgb, var(--success) 88%, #000);
+}
+
+:global(.btn.btn-danger) {
+  color: #fff;
+  background: var(--danger);
+  border-color: transparent;
+  box-shadow: 0 4px 12px -3px color-mix(in srgb, var(--danger) 55%, transparent);
+}
+:global(.btn.btn-danger:hover) {
+  color: #fff;
+  background: color-mix(in srgb, var(--danger) 88%, #000);
+}
+
+:global(.btn.btn-warning) {
+  color: #3a2a05;
+  background: var(--warning);
+  border-color: transparent;
+  box-shadow: 0 4px 12px -3px color-mix(in srgb, var(--warning) 55%, transparent);
+}
+:global(.btn.btn-warning:hover) {
+  color: #3a2a05;
+  background: color-mix(in srgb, var(--warning) 90%, #000);
+}
+
+:global(.btn.btn-info) {
+  color: #fff;
+  background: var(--info);
+  border-color: transparent;
+  box-shadow: 0 4px 12px -3px color-mix(in srgb, var(--info) 55%, transparent);
+}
+:global(.btn.btn-info:hover) {
+  color: #fff;
+  background: color-mix(in srgb, var(--info) 88%, #000);
+}
+
+:global(.btn.btn-light) {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: var(--shadow-xs);
+}
+:global(.btn.btn-light:hover) {
+  color: var(--text);
+  background: var(--surface-sunken);
+}
+
+:global(.btn.btn-dark) {
+  color: #fff;
+  background: var(--text);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
+}
+:global(.btn.btn-dark:hover) {
+  color: #fff;
+  background: color-mix(in srgb, var(--text) 82%, #000);
+}
+
+/* -----------------------------------------------------------------------
+   OUTLINE VARIANTS  (transparent fill, colored border+text, soft fill on hover)
+   ----------------------------------------------------------------------- */
+:global(.btn.btn-outline-primary) {
+  color: var(--primary-stronger);
+  background: transparent;
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+:global(.btn.btn-outline-primary:hover) {
+  color: var(--primary-stronger);
+  background: var(--primary-soft);
+  border-color: var(--primary);
+}
+
+:global(.btn.btn-outline-secondary) {
+  color: var(--text-muted);
+  background: transparent;
+  border-color: var(--border-strong);
+}
+:global(.btn.btn-outline-secondary:hover) {
+  color: var(--text);
+  background: var(--surface-sunken);
+  border-color: var(--text-subtle);
+}
+
+:global(.btn.btn-outline-success) {
+  color: var(--success);
+  border-color: var(--success-border);
+}
+:global(.btn.btn-outline-success:hover) {
+  color: #fff;
+  background: var(--success);
+  border-color: var(--success);
+}
+
+:global(.btn.btn-outline-danger) {
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+:global(.btn.btn-outline-danger:hover) {
+  color: #fff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+:global(.btn.btn-outline-warning) {
+  color: color-mix(in srgb, var(--warning) 85%, #000);
+  border-color: var(--warning-border);
+}
+:global(.btn.btn-outline-warning:hover) {
+  color: #3a2a05;
+  background: var(--warning);
+  border-color: var(--warning);
+}
+
+:global(.btn.btn-outline-info) {
+  color: var(--info);
+  border-color: var(--info-border);
+}
+:global(.btn.btn-outline-info:hover) {
+  color: #fff;
+  background: var(--info);
+  border-color: var(--info);
+}
+
+:global(.btn.btn-outline-light) {
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+:global(.btn.btn-outline-light:hover) {
+  color: var(--text);
+  background: var(--surface-sunken);
+}
+
+:global(.btn.btn-outline-dark) {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+:global(.btn.btn-outline-dark:hover) {
+  color: #fff;
+  background: var(--text);
+  border-color: var(--text);
+}
+
+/* -----------------------------------------------------------------------
+   GHOST  (local class from Btn.tsx: transparent, tinted hover only)
+   ----------------------------------------------------------------------- */
+.ghost {
+  background: transparent !important;
   border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-muted) !important;
+}
+.ghost:hover {
+  background: var(--primary-softer) !important;
+  border-color: transparent !important;
+  color: var(--primary-strong) !important;
+}
+
+/* Loading spinner tint follows the button foreground */
+:global(.btn .spinner-border) {
+  width: 1em;
+  height: 1em;
+  border-width: 0.14em;
 }
