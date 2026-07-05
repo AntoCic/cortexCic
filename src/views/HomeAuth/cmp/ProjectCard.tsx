@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Project } from '../../../db/projects/Project';
-import { cardHover, fadeUp } from '../../../styles/motionVariants';
+import { fadeUp } from '../../../styles/motionVariants';
 import styles from '../HomeAuth.module.css';
 
 interface Props {
@@ -14,10 +14,9 @@ const ProjectCard = ({ project }: Props) => {
 
   return (
     <motion.div
-      variants={{ ...fadeUp, ...cardHover }}
+      variants={fadeUp}
       initial="hidden"
       animate="visible"
-      whileHover="hover"
       onClick={() => navigate(`/project/${project.id}/tasks`)}
       className={styles.projectCard}
     >
