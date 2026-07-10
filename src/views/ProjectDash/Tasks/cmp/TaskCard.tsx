@@ -14,9 +14,9 @@ import styles from '../Tasks.module.css';
 type DueDateState = 'normal' | 'warning' | 'overdue';
 
 const DUE_DATE_COLORS: Record<DueDateState, string> = {
-  normal: '#495057',
-  warning: '#e8590c',
-  overdue: '#e03131',
+  normal: 'var(--text-muted)',
+  warning: 'var(--urgency-high)',
+  overdue: 'var(--danger)',
 };
 
 function getDueDateState(dueDate: Timestamp, status: Task['status']): DueDateState {
@@ -105,7 +105,7 @@ const TaskCard = ({ task, onEdit, onDelete, members = {} }: Props) => {
               title={formatDueDate(task.dueDate)}
               style={{
                 color: DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)],
-                background: `${DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)]}14`,
+                background: `color-mix(in srgb, ${DUE_DATE_COLORS[getDueDateState(task.dueDate, task.status)]} 12%, transparent)`,
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 14 }}>event</span>

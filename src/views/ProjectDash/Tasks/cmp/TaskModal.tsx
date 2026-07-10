@@ -59,23 +59,23 @@ type OptionCard = {
 };
 
 const STATUS_OPTIONS: Array<OptionCard & { value: TaskStatusValue }> = [
-  { value: TaskStatus.Todo, label: 'To Do', description: 'Da iniziare o ancora da definire.', icon: 'schedule', color: '#6c757d' },
-  { value: TaskStatus.InProgress, label: 'In Progress', description: 'Task in lavorazione in questo momento.', icon: 'play_circle', color: '#4c6ef5' },
-  { value: TaskStatus.Done, label: 'Done', description: 'Completata e pronta da chiudere.', icon: 'task_alt', color: '#12b886' },
-  { value: TaskStatus.Block, label: 'Blocked', description: 'Ferma per dipendenze o impedimenti.', icon: 'block', color: '#e03131' },
+  { value: TaskStatus.Todo, label: 'To Do', description: 'Da iniziare o ancora da definire.', icon: 'schedule', color: 'var(--state-todo)' },
+  { value: TaskStatus.InProgress, label: 'In Progress', description: 'Task in lavorazione in questo momento.', icon: 'play_circle', color: 'var(--state-progress)' },
+  { value: TaskStatus.Done, label: 'Done', description: 'Completata e pronta da chiudere.', icon: 'task_alt', color: 'var(--state-done)' },
+  { value: TaskStatus.Block, label: 'Blocked', description: 'Ferma per dipendenze o impedimenti.', icon: 'block', color: 'var(--state-block)' },
 ];
 
 const URGENCY_OPTIONS: Array<OptionCard & { value: TaskUrgencyValue }> = [
-  { value: TaskUrgency.Low, label: 'Bassa', description: 'Può aspettare senza creare attrito.', icon: 'routine', color: '#2b8a3e' },
-  { value: TaskUrgency.Medium, label: 'Normale', description: 'Flusso standard, priorità di default.', icon: 'radio_button_checked', color: '#f08c00' },
-  { value: TaskUrgency.High, label: 'Alta', description: 'Meglio farla presto per non rallentare.', icon: 'priority_high', color: '#e8590c' },
-  { value: TaskUrgency.Critical, label: 'Critica', description: 'Serve attenzione immediata.', icon: 'local_fire_department', color: '#c92a2a' },
+  { value: TaskUrgency.Low, label: 'Bassa', description: 'Può aspettare senza creare attrito.', icon: 'routine', color: 'var(--urgency-low)' },
+  { value: TaskUrgency.Medium, label: 'Normale', description: 'Flusso standard, priorità di default.', icon: 'radio_button_checked', color: 'var(--urgency-medium)' },
+  { value: TaskUrgency.High, label: 'Alta', description: 'Meglio farla presto per non rallentare.', icon: 'priority_high', color: 'var(--urgency-high)' },
+  { value: TaskUrgency.Critical, label: 'Critica', description: 'Serve attenzione immediata.', icon: 'local_fire_department', color: 'var(--urgency-critical)' },
 ];
 
 const CATEGORY_OPTIONS: Array<OptionCard & { value: TaskCategoryValue }> = [
-  { value: TaskCategory.Feature, label: TASK_CATEGORY_LABELS.feature, description: 'Nuova funzionalità da progettare o implementare.', icon: TASK_CATEGORY_ICONS.feature, color: '#6c63ff' },
-  { value: TaskCategory.Bug, label: TASK_CATEGORY_LABELS.bug, description: 'Problema da correggere o comportamento anomalo.', icon: TASK_CATEGORY_ICONS.bug, color: '#e03131' },
-  { value: TaskCategory.Spike, label: TASK_CATEGORY_LABELS.spike, description: 'Analisi tecnica o verifica di fattibilità.', icon: TASK_CATEGORY_ICONS.spike, color: '#0c8599' },
+  { value: TaskCategory.Feature, label: TASK_CATEGORY_LABELS.feature, description: 'Nuova funzionalità da progettare o implementare.', icon: TASK_CATEGORY_ICONS.feature, color: 'var(--primary)' },
+  { value: TaskCategory.Bug, label: TASK_CATEGORY_LABELS.bug, description: 'Problema da correggere o comportamento anomalo.', icon: TASK_CATEGORY_ICONS.bug, color: 'var(--danger)' },
+  { value: TaskCategory.Spike, label: TASK_CATEGORY_LABELS.spike, description: 'Analisi tecnica o verifica di fattibilità.', icon: TASK_CATEGORY_ICONS.spike, color: 'var(--info)' },
 ];
 
 function createPendingAttachment(file: File): PendingAttachment {
@@ -534,7 +534,7 @@ const TaskModal = ({
           {isEditing ? (
             <span
               className="d-inline-flex align-items-center gap-1 small"
-              style={{ color: titleError || saveState === 'error' ? '#e03131' : '#6c757d' }}
+              style={{ color: titleError || saveState === 'error' ? 'var(--danger)' : 'var(--text-muted)' }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{saveStatusIcon}</span>
               {saveStatusLabel}

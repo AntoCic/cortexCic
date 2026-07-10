@@ -47,7 +47,10 @@
 }
 
 :global(.modal .modal-header) {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   padding: 1.15rem 1.4rem;
   border-bottom: 1px solid var(--border-subtle);
   background: linear-gradient(180deg, var(--primary-softer), transparent);
@@ -60,6 +63,10 @@
   letter-spacing: var(--tracking-tight);
   color: var(--text);
   margin: 0;
+}
+
+:global(.modal .modal-header > div) {
+  margin-left: auto;
 }
 
 :global(.modal .modal-body) {

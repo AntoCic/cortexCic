@@ -16,11 +16,37 @@ import type { Unsubscribe } from 'firebase/firestore';
 import { db } from '../../components/firebase/firebase';
 import type { Project, ProjectMember, ProjectWrite } from './Project';
 import { normalizeProjectIdentifierInput } from './projectIdentifier';
+import { MemberRole, isMemberRole } from '../../enums/MemberRole';
 
 const col = collection(db, 'projects');
 
+function normalizeMembers(value: unknown): Record<string, ProjectMember> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).flatMap(([uid, rawMember]) => {
+      if (!rawMember || typeof rawMember !== 'object' || Array.isArray(rawMember)) return [];
+
+      const member = rawMember as Partial<ProjectMember>;
+      if (typeof member.email !== 'string' || !member.email.trim()) return [];
+
+      return [[uid, {
+        ...member,
+        email: member.email,
+        role: isMemberRole(member.role) ? member.role : MemberRole.Member,
+      } as ProjectMember]];
+    }),
+  );
+}
+
 function docToProject(id: string, data: Record<string, unknown>): Project {
-  return { id, ...(data as Omit<Project, 'id'>) };
+  const project = data as Omit<Project, 'id'>;
+  return {
+    id,
+    ...project,
+    members: normalizeMembers(project.members),
+    memberUids: Array.isArray(project.memberUids) ? project.memberUids.filter((uid): uid is string => typeof uid === 'string') : [],
+  };
 }
 
 export async function createProject(data: Omit<ProjectWrite, 'createdAt' | 'updatedAt'>): Promise<string> {

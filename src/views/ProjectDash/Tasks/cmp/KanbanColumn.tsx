@@ -8,13 +8,6 @@ import { fadeUp } from '../../../../styles/motionVariants';
 import TaskCard from './TaskCard';
 import styles from '../Tasks.module.css';
 
-const DOT_COLORS: Record<TaskStatusValue, string> = {
-  todo: '#adb5bd',
-  inprogress: '#6c63ff',
-  done: '#20c997',
-  block: '#dc3545',
-};
-
 interface Props {
   status: TaskStatusValue;
   label: string;
@@ -31,10 +24,10 @@ const KanbanColumn = ({ status, label, tasks, onEdit, onDelete, hiddenCount = 0,
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
-    <div className={styles.column}>
+    <div className={`${styles.column} ${styles[status]}`}>
       <div className={styles.columnHeader}>
         <span className={styles.columnTitle}>
-          <span className={styles.columnDot} style={{ background: DOT_COLORS[status] }} />
+          <span className={styles.columnDot} />
           {label}
         </span>
         <div className={styles.columnHeaderActions}>

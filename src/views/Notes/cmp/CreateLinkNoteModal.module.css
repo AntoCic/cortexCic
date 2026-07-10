@@ -7,20 +7,20 @@
 .iconBtn {
   width: 36px;
   height: 36px;
-  border: 1px solid rgba(13, 110, 253, 0.18);
-  border-radius: 10px;
-  background: rgba(13, 110, 253, 0.06);
-  color: #0d6efd;
+  border: 1px solid var(--info-border);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--info) 8%, var(--surface));
+  color: var(--info);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  transition: var(--transition-colors), transform var(--duration-fast) var(--ease-out);
 }
 
 .iconBtn:hover {
-  background: rgba(13, 110, 253, 0.12);
-  border-color: rgba(13, 110, 253, 0.32);
+  background: color-mix(in srgb, var(--info) 16%, var(--surface));
+  border-color: var(--info);
   transform: translateY(-1px);
 }
 

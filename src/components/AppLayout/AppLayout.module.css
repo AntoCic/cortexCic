@@ -47,10 +47,7 @@
   width: 34px;
   height: 34px;
   object-fit: contain;
-  border-radius: var(--radius-sm);
-  padding: 3px;
-  background: var(--gradient-primary);
-  box-shadow: var(--shadow-primary-sm);
+  border-radius: 0;
 }
 
 .brandName {

@@ -59,7 +59,7 @@ const NotificationMessage = ({ notif, uid, onPin, onDownload, onCopy }: Props) =
           </span>
           {!isRead && <span className={styles.unreadDot} title="Non letta" />}
           {isPinned && (
-            <span className="material-symbols-outlined" style={{ fontSize: 13, color: '#6d28d9' }}>push_pin</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 13, color: 'var(--notif-deploy)' }}>push_pin</span>
           )}
         </div>
         <div className={styles.right}>

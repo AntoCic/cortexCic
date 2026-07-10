@@ -216,7 +216,7 @@ const NotificationsPage = () => {
 
         {displayItems.length === 0 && !loadingMore && (
           <div className={styles.empty}>
-            <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: '#dee2e6', display: 'block', marginBottom: '0.75rem' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', color: 'var(--border-strong)', display: 'block', marginBottom: '0.75rem' }}>
               notifications_off
             </span>
             Nessuna notifica
